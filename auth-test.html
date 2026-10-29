@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste de autenticação via curl</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="login-screen">
+      <section class="login-card">
+        <h1>Teste via curl</h1>
+        <p>
+          O teste de autenticação foi movido para o terminal para verificar diretamente a resposta
+          da API, sem a política CORS do navegador.
+        </p>
+        <p>Abra o PowerShell nesta pasta e execute:</p>
+        <pre class="auth-test-log">.\auth-test.ps1</pre>
+        <p>
+          O script solicita as credenciais sem exibir o segredo, testa
+          <code>POST /auth/apply</code> e grava um log sanitizado em
+          <code>logs\auth-test.jsonl</code>.
+        </p>
+        <p>
+          O curl não valida CORS. Mesmo que a autenticação funcione aqui, o servidor ainda precisa
+          responder ao preflight <code>OPTIONS</code> e permitir a origem da aplicação para que o
+          navegador possa chamar a API. O script também registra essa resposta de preflight.
+        </p>
+        <a class="test-page-link" href="README.md">Instruções completas</a>
+        <a class="test-page-link" href="index.html">Voltar ao Feige API Tester</a>
+      </section>
+    </main>
+  </body>
+</html>

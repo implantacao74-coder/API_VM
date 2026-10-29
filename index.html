@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Tester</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="loginScreen" class="login-screen">
+      <form id="loginForm" class="login-card">
+        <h1>Feige API Tester</h1>
+        <p>Autentique-se para abrir uma sessão e acessar o testador.</p>
+
+        <label for="authBaseUrlInput">Base URL</label>
+        <input id="authBaseUrlInput" type="url" value="https://veda.figeth.com/prod-api" required />
+
+        <label for="appKeyInput">App Key</label>
+        <input id="appKeyInput" type="text" autocomplete="username" required />
+
+        <label for="appSecretInput">App Secret</label>
+        <input id="appSecretInput" type="password" autocomplete="current-password" required />
+
+        <p id="loginError" class="login-error" role="alert" hidden></p>
+        <button id="loginBtn" type="submit" class="primary">Autenticar e abrir sessão</button>
+        <a class="test-page-link" href="auth-test.html">Como testar a autenticação via curl</a>
+      </form>
+    </main>
+
+    <div id="appShell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <h1>Feige API Tester</h1>
+
+        <label for="jsonInput">Collection JSON do Postman</label>
+        <textarea id="jsonInput" spellcheck="false" placeholder="Cole a collection.json da API..."></textarea>
+
+        <div class="actions-row">
+          <label class="upload-btn">
+            <input id="fileInput" type="file" accept="application/json" />
+            Carregar JSON
+          </label>
+          <button id="loadSampleBtn" type="button" class="secondary">Collection Feige</button>
+        </div>
+
+        <button id="parseBtn" type="button" class="primary">Carregar endpoints</button>
+
+        <div class="summary-box">
+          <h2>Resumo</h2>
+          <p id="configSummary">Nenhum arquivo carregado.</p>
+        </div>
+
+        <div class="summary-box variables-box">
+          <h2>Variáveis</h2>
+          <textarea id="variablesInput" class="code-box variables-box-text" spellcheck="false" placeholder='{"baseUrl":"https://...","token":"..."}'></textarea>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <section class="toolbar">
+          <label for="baseUrlInput">Base URL</label>
+          <input id="baseUrlInput" type="text" placeholder="https://api.exemplo.com" />
+
+          <label for="endpointSelect">Endpoint</label>
+          <select id="endpointSelect"></select>
+
+          <button id="sendRequestBtn" type="button" class="primary">Enviar requisição</button>
+          <button id="logoutBtn" type="button" class="secondary">Encerrar sessão</button>
+        </section>
+
+        <section class="request-panel">
+          <div class="request-meta">
+            <label for="methodInput">Método</label>
+            <select id="methodInput">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+
+            <label for="pathInput">Path</label>
+            <input id="pathInput" type="text" placeholder="/usuarios" />
+          </div>
+
+          <div class="grid-two">
+            <div>
+              <label for="headersInput">Headers (JSON)</label>
+              <textarea id="headersInput" class="code-box" spellcheck="false" placeholder='{"Authorization":"Bearer token"}'></textarea>
+            </div>
+            <div>
+              <label for="bodyInput">Body (JSON)</label>
+              <textarea id="bodyInput" class="code-box" spellcheck="false" placeholder='{"nome":"João"}'></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="response-panel">
+          <div class="status-bar">
+            <h2>Resposta</h2>
+            <span id="statusBadge" class="status-badge idle">Aguardando</span>
+          </div>
+          <pre id="responseOutput">{}</pre>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
