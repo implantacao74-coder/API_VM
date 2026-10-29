@@ -1,4 +1,22 @@
-# Feige API authentication test with curl
+# Feige API Tester
+
+This project contains a browser-based interface for authenticating with the Feige API and sending requests from a Postman collection, plus PowerShell scripts for command-line connectivity tests. It uses plain HTML, CSS, and JavaScript; there is no build step or package installation.
+
+## Run the web app
+
+From this folder, start a local static web server in PowerShell:
+
+```powershell
+py -m http.server 8000
+```
+
+Open <http://localhost:8000> in a browser. Alternatively, open `index.html` using a local web-server extension such as Live Server.
+
+Enter the API base URL, App Key, and App Secret to authenticate. The default base URL is `https://veda.figeth.com/prod-api`. After authentication, load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**. The built-in sample contains authentication and device-list requests. Edit the variables, headers, path, or request body as needed, then select an endpoint and send the request.
+
+The browser sends requests directly to the API. The API must allow the page's origin through CORS; this app does not provide a server-side proxy. The access token is kept in the current browser session and removed when you end the session. Do not publish App Keys, App Secrets, tokens, or other sensitive values. Review imported requests before sending them, especially requests that change data or control devices.
+
+## Command-line authentication diagnostic
 
 The authentication diagnostic runs through `curl.exe` in PowerShell, not through the browser. This allows direct inspection of the HTTP status and API response without browser-enforced CORS.
 
