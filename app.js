@@ -43,9 +43,9 @@ const defaultJson = JSON.stringify(
           method: "POST",
           header: [{ key: "Content-Type", value: "application/json" }],
           url: {
-            raw: "{{baseUrl}}/api/v1/device/list?pageNo=1&pageSize=20",
+            raw: "{{baseUrl}}/v1/device/list?pageNo=1&pageSize=20",
             host: ["{{baseUrl}}"],
-            path: ["api", "v1", "device", "list"],
+            path: ["v1", "device", "list"],
             query: [
               { key: "pageNo", value: "1" },
               { key: "pageSize", value: "20" }
@@ -60,7 +60,7 @@ const defaultJson = JSON.stringify(
       }
     ],
     variable: [
-      { key: "baseUrl", value: "https://veda.figeth.com/api/luobo-machine-api" },
+      { key: "baseUrl", value: "https://veda.figeth.com/api" },
       { key: "appKey", value: "" },
       { key: "appSecret", value: "" },
       { key: "token", value: "" },
@@ -292,7 +292,10 @@ function getEffectiveVariables() {
 
 function buildRequestUrl(baseUrl, path, queryParams) {
   const cleanBase = baseUrl.replace(/\/$/, "");
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  let cleanPath = path.startsWith("/") ? path : `/${path}`;
+  if (cleanBase.endsWith("/api") && cleanPath.startsWith("/api/v1/")) {
+    cleanPath = cleanPath.slice("/api".length);
+  }
 
   const query = (queryParams || [])
     .map((param) => {
@@ -411,8 +414,8 @@ async function sendRequest() {
     }
 
     const apiUrl = new URL(url);
-    if (apiUrl.origin !== "https://veda.figeth.com" || !apiUrl.pathname.startsWith("/api/")) {
-      throw new Error("As requisições devem usar o host Feige e um path /api/.");
+    if (apiUrl.origin !== "https://veda.figeth.com" || !apiUrl.pathname.startsWith("/api/v1/")) {
+      throw new Error("As requisições devem usar https://veda.figeth.com/api e um path /v1/.");
     }
 
     setStatus("idle", "Enviando");
@@ -422,7 +425,7 @@ async function sendRequest() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        path: `${apiUrl.pathname}${apiUrl.search}`,
+        path: `${apiUrl.pathname.slice("/api".length)}${apiUrl.search}`,
         method,
         headers,
         body,

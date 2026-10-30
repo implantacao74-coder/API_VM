@@ -4,7 +4,7 @@ const API_TOOLS = [
     id: "devices",
     label: "Listar dispositivos",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/device/list",
+    path: "/v1/device/list",
     query: { pageNo: 1, pageSize: 50 },
     body: {},
     description: "Lista dispositivos. Filtros opcionais no corpo: deviceName e status (1 online, 2 offline)."
@@ -14,7 +14,7 @@ const API_TOOLS = [
     id: "inventory",
     label: "Listar estoque do dispositivo",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/deviceInventory/list",
+    path: "/v1/deviceInventory/list",
     query: { deviceId: "" },
     body: {},
     description: "Consulta canais e quantidades de estoque. Query obrigatória: deviceId."
@@ -24,7 +24,7 @@ const API_TOOLS = [
     id: "replenish",
     label: "Atualizar estoque",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/deviceInventory/replenish",
+    path: "/v1/deviceInventory/replenish",
     query: {},
     body: { infoList: [{ inventoryId: "", count: 0 }] },
     description: "Atualiza contagens após inventário físico. Cada elemento de infoList exige inventoryId e count.",
@@ -35,7 +35,7 @@ const API_TOOLS = [
     id: "channel-test",
     label: "Testar canais",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/deviceInventory/testChannel",
+    path: "/v1/deviceInventory/testChannel",
     query: {},
     body: { deviceId: "", ids: [""] },
     description: "Aciona um teste nos canais selecionados. Retorna um ID para consultar o resultado.",
@@ -46,7 +46,7 @@ const API_TOOLS = [
     id: "channel-result",
     label: "Consultar teste de canais",
     method: "GET",
-    path: "/api/luobo-machine-api/api/v1/deviceInventory/getTestResult",
+    path: "/v1/deviceInventory/getTestResult",
     query: { id: "" },
     body: null,
     description: "Consulta o resultado de teste pelo ID da tarefa."
@@ -56,7 +56,7 @@ const API_TOOLS = [
     id: "products",
     label: "Listar produtos",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/productCategory/listPrivate",
+    path: "/v1/productCategory/listPrivate",
     query: { pageNo: 1, pageSize: 50 },
     body: { name: "" },
     description: "Lista produtos com paginação. O filtro name é opcional."
@@ -66,7 +66,7 @@ const API_TOOLS = [
     id: "vend",
     label: "Dispensar produto",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/freeTier/vend",
+    path: "/v1/freeTier/vend",
     query: {},
     body: { deviceId: "", cargoPassageIds: [""] },
     description: "Solicita dispensação pelos canais indicados. Retorna o ID da tarefa.",
@@ -77,7 +77,7 @@ const API_TOOLS = [
     id: "vend-result",
     label: "Consultar resultado da dispensação",
     method: "GET",
-    path: "/api/luobo-machine-api/api/v1/freeTier/getVendorResult",
+    path: "/v1/freeTier/getVendorResult",
     query: { vendorId: "" },
     body: null,
     description: "Consulta a tarefa de dispensação pelo vendorId."
@@ -87,7 +87,7 @@ const API_TOOLS = [
     id: "open-door",
     label: "Abrir porta",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/control/openDoor",
+    path: "/v1/control/openDoor",
     query: {},
     body: { deviceId: "", delayClose: 3000 },
     description: "Abre a porta do smart cabinet. delayClose é informado em milissegundos.",
@@ -98,7 +98,7 @@ const API_TOOLS = [
     id: "close-door",
     label: "Fechar porta",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/control/closeDoor",
+    path: "/v1/control/closeDoor",
     query: {},
     body: { deviceId: "" },
     description: "Solicita o fechamento da porta do smart cabinet.",
@@ -109,7 +109,7 @@ const API_TOOLS = [
     id: "door-status",
     label: "Consultar estado da porta",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/control/queryDoorStatus",
+    path: "/v1/control/queryDoorStatus",
     query: {},
     body: { deviceId: "" },
     description: "Consulta mainOpen e subOpen: 0 = fechada; 1 = aberta."
@@ -119,7 +119,7 @@ const API_TOOLS = [
     id: "orders",
     label: "Listar pedidos",
     method: "GET",
-    path: "/api/luobo-machine-api/api/v1/order/list",
+    path: "/v1/order/list",
     query: { pageNo: 1, pageSize: 50 },
     body: null,
     description: "Lista pedidos. Filtros opcionais na query: device, orderNo, createTimeStart e createTimeEnd (YYYY-MM-DD)."
@@ -129,7 +129,7 @@ const API_TOOLS = [
     id: "coupon-generate",
     label: "Gerar cupons",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/coupon/generate",
+    path: "/v1/coupon/generate",
     query: {},
     body: {
       name: "",
@@ -149,7 +149,7 @@ const API_TOOLS = [
     id: "coupons",
     label: "Listar cupons",
     method: "POST",
-    path: "/api/luobo-machine-api/api/v1/coupon/list",
+    path: "/v1/coupon/list",
     query: { pageNo: 1, pageSize: 50 },
     body: {},
     description: "Lista cupons. Filtro opcional no corpo: status (1 não utilizado, 2 utilizado)."
@@ -159,7 +159,7 @@ const API_TOOLS = [
     id: "coupon-code",
     label: "Consultar cupom por código",
     method: "GET",
-    path: "/api/luobo-machine-api/api/v1/coupon/getByCode",
+    path: "/v1/coupon/getByCode",
     query: { code: "" },
     body: null,
     description: "Consulta um cupom pelo código."
@@ -325,7 +325,7 @@ function updateToolForm() {
   const tool = getTool(toolSelect.value);
   if (!tool) return;
 
-  toolDescription.textContent = `${tool.method} ${tool.path} — ${tool.description}`;
+  toolDescription.textContent = `${tool.method} https://veda.figeth.com/api${tool.path} — ${tool.description}`;
   toolWarning.hidden = !tool.risky;
   toolWarning.textContent = tool.risky || "";
   queryInput.value = JSON.stringify(tool.query, null, 2);
@@ -545,7 +545,7 @@ async function runTool() {
     const result = {
       operation: tool.label,
       method: tool.method,
-      path: apiPath,
+      path: `https://veda.figeth.com/api${apiPath}`,
       httpStatus: response.status,
       apiCode,
       ok: response.ok && apiSuccess,

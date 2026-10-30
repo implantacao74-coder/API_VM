@@ -5,7 +5,7 @@ const path = require("node:path");
 const HOST = "127.0.0.1";
 const PORT = Number(process.env.PORT || 8000);
 const AUTH_URL = "https://veda.figeth.com/api/auth/apply";
-const API_ORIGIN = "https://veda.figeth.com";
+const API_BASE_URL = "https://veda.figeth.com/api";
 const ROOT = __dirname;
 const ALLOWED_AUTH_ORIGINS = new Set([
   "http://127.0.0.1:5500",
@@ -180,10 +180,10 @@ async function proxyApiRequest(request, response) {
     return;
   }
 
-  if (typeof input.path !== "string" || !input.path.startsWith("/api/") ||
+  if (typeof input.path !== "string" || !input.path.startsWith("/v1/") ||
       input.path.startsWith("//") || input.path.includes("\\") ||
       typeof input.token !== "string" || !input.token.trim()) {
-    sendJson(response, 400, { message: "A relative /api path and access token are required." }, origin);
+    sendJson(response, 400, { message: "A relative /v1 path and access token are required." }, origin);
     return;
   }
 
@@ -195,12 +195,14 @@ async function proxyApiRequest(request, response) {
 
   let targetUrl;
   try {
-    targetUrl = new URL(input.path, API_ORIGIN);
+    targetUrl = new URL(input.path, `${API_BASE_URL}/`);
   } catch {
     sendJson(response, 400, { message: "Invalid API path." }, origin);
     return;
   }
-  if (targetUrl.origin !== API_ORIGIN || !targetUrl.pathname.startsWith("/api/")) {
+  if (targetUrl.origin !== "https://veda.figeth.com" ||
+      !targetUrl.pathname.startsWith("/api/v1/") ||
+      targetUrl.pathname !== `/api${input.path}`) {
     sendJson(response, 400, { message: "Only the configured Feige API is available." }, origin);
     return;
   }
