@@ -323,16 +323,18 @@ function renderDevices(records) {
     const row = document.createElement("tr");
     const status = Number(device.status);
     const values = [
-      device.deviceName || "—",
-      device.id ?? device.deviceUuid ?? "—"
+      ["Dispositivo", device.deviceName || "—"],
+      ["ID", device.id ?? device.deviceUuid ?? "—"]
     ];
-    for (const value of values) {
+    for (const [label, value] of values) {
       const cell = document.createElement("td");
+      cell.dataset.label = label;
       cell.textContent = String(value);
       row.appendChild(cell);
     }
 
     const stateCell = document.createElement("td");
+    stateCell.dataset.label = "Estado";
     const state = document.createElement("span");
     state.className = `device-state ${status === 1 ? "online" : status === 2 ? "offline" : ""}`.trim();
     state.textContent = status === 1 ? "Online" : status === 2 ? "Offline" : String(device.status ?? "Desconhecido");
@@ -340,14 +342,17 @@ function renderDevices(records) {
     row.appendChild(stateCell);
 
     const signalCell = document.createElement("td");
+    signalCell.dataset.label = "Sinal";
     signalCell.textContent = `4G: ${device.strength4g ?? "—"} / Wi-Fi: ${device.strengthWifi ?? "—"}`;
     row.appendChild(signalCell);
 
     const versionCell = document.createElement("td");
+    versionCell.dataset.label = "Versão";
     versionCell.textContent = String(device.deviceVersion ?? "—");
     row.appendChild(versionCell);
 
     const actionsCell = document.createElement("td");
+    actionsCell.dataset.label = "Ações";
     actionsCell.append(
       makeDeviceAction("Estoque", "inventory", "deviceId", device.id),
       makeDeviceAction("Porta", "door-status", "deviceId", device.id)

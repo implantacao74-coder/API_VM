@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07101f" />
+    <meta name="description" content="Execute testes de canais e consulte resultados dos equipamentos Feige." />
+    <title>Testes de equipamento Feige</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="monitor.css" />
+  </head>
+  <body>
+    <main class="monitor-page">
+      <header class="monitor-header">
+        <div>
+          <p class="monitor-eyebrow">FEIGE API · DIAGNÓSTICO</p>
+          <h1>Testes de equipamento</h1>
+          <p class="monitor-subtitle">Teste canais do dispositivo e consulte o resultado da tarefa.</p>
+        </div>
+        <nav class="monitor-nav" aria-label="Navegação">
+          <a href="monitor.html">Monitoração</a>
+          <a href="index.html">API Tester</a>
+        </nav>
+      </header>
+
+      <section id="loginNotice" class="monitor-notice" hidden>
+        <p>Não há uma sessão ativa neste navegador. Entre no API Tester e autentique-se para continuar.</p>
+        <a class="monitor-button" href="index.html">Ir para autenticação</a>
+      </section>
+
+      <div id="testsContent">
+        <section class="monitor-panel">
+          <div class="monitor-section-heading">
+            <div>
+              <h2>Testar canais</h2>
+              <p>Informe o ID do dispositivo e um ou mais IDs de inventário/canais.</p>
+            </div>
+          </div>
+          <p class="tool-warning">
+            O teste pode acionar fisicamente o equipamento. Confira o dispositivo e os canais antes de continuar.
+          </p>
+          <form id="channelTestForm">
+            <div class="test-form-grid">
+              <div>
+                <label for="deviceIdInput">ID do dispositivo</label>
+                <input id="deviceIdInput" type="text" autocomplete="off" required />
+              </div>
+              <div>
+                <label for="channelIdsInput">IDs dos canais</label>
+                <textarea id="channelIdsInput" rows="4" placeholder="Um ID por linha ou separados por vírgula" required></textarea>
+              </div>
+            </div>
+            <div class="tool-actions">
+              <button id="runChannelTestBtn" class="primary" type="submit">Executar teste de canais</button>
+              <span id="channelTestStatus" class="monitor-status" role="status">Aguardando.</span>
+            </div>
+          </form>
+          <pre id="channelTestOutput" class="monitor-output">{}</pre>
+        </section>
+
+        <section class="monitor-panel">
+          <div class="monitor-section-heading">
+            <div>
+              <h2>Consultar resultado</h2>
+              <p>Use o ID da tarefa retornado pelo teste de canais.</p>
+            </div>
+          </div>
+          <form id="channelResultForm" class="test-result-form">
+            <div>
+              <label for="taskIdInput">ID da tarefa</label>
+              <input id="taskIdInput" type="text" autocomplete="off" required />
+            </div>
+            <button id="getChannelResultBtn" class="primary" type="submit">Consultar resultado</button>
+          </form>
+          <p id="channelResultStatus" class="monitor-status" role="status">Aguardando.</p>
+          <pre id="channelResultOutput" class="monitor-output">{}</pre>
+        </section>
+      </div>
+    </main>
+    <script src="monitor-tests.js"></script>
+  </body>
+</html>

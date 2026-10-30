@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07101f" />
+    <meta name="description" content="Visualização HTML formatada da resposta mais recente da API." />
+    <title>Visualização da resposta · Feige API</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="response-view-page">
+      <header class="response-view-header">
+        <div>
+          <p class="monitor-eyebrow">FEIGE API · RESULTADO</p>
+          <h1>Visualização da resposta</h1>
+          <p class="response-view-subtitle">Demonstração HTML da última execução do API Tester.</p>
+        </div>
+        <nav class="response-view-nav" aria-label="Navegação">
+          <a class="response-view-back" href="index.html">Voltar ao API Tester</a>
+        </nav>
+      </header>
+
+      <section id="emptyResponse" class="response-view-empty" hidden>
+        <h2>Nenhuma resposta disponível</h2>
+        <p>Execute uma requisição no API Tester e abra novamente esta visualização.</p>
+        <a class="response-view-back" href="index.html">Ir para o API Tester</a>
+      </section>
+
+      <div id="responseContent" hidden>
+        <section class="response-summary">
+          <div class="response-summary-heading">
+            <div>
+              <span class="response-kicker">STATUS HTTP</span>
+              <strong id="httpStatusValue">—</strong>
+            </div>
+            <span id="responseOutcome" class="response-outcome">—</span>
+          </div>
+          <div class="response-meta-grid">
+            <div class="response-meta-card">
+              <span>Método</span>
+              <strong id="responseMethod">—</strong>
+            </div>
+            <div class="response-meta-card">
+              <span>Código da API</span>
+              <strong id="responseApiCode">—</strong>
+            </div>
+            <div class="response-meta-card response-url-card">
+              <span>URL</span>
+              <strong id="responseUrl">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="response-data-panel">
+          <div class="response-data-heading">
+            <div>
+              <p class="response-kicker">PAYLOAD</p>
+              <h2>Dados retornados</h2>
+            </div>
+            <button id="toggleRawResponse" class="secondary" type="button" aria-expanded="false">
+              Ver JSON
+            </button>
+          </div>
+          <div id="responseData" class="response-data"></div>
+          <pre id="rawResponse" class="response-raw" hidden></pre>
+        </section>
+      </div>
+    </main>
+    <script src="response-view.js"></script>
+  </body>
+</html>

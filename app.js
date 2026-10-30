@@ -96,11 +96,70 @@ const loginError = document.getElementById("loginError");
 const loginBtn = document.getElementById("loginBtn");
 const appShell = document.getElementById("appShell");
 const logoutBtn = document.getElementById("logoutBtn");
+const viewResponseBtn = document.getElementById("viewResponseBtn");
 
 let collectionData = null;
 let endpoints = [];
 let variables = {};
 let sessionToken = sessionStorage.getItem("feigeAuthToken") || "";
+viewResponseBtn.hidden = !sessionStorage.getItem("feigeLastApiResponse");
+
+function redactSensitiveValue(value, secrets) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => redactSensitiveValue(entry, secrets));
+  }
+  if (typeof value === "string") {
+    return secrets.reduce(
+      (safeValue, secret) => safeValue.split(secret).join("[REDACTED]"),
+      value
+    );
+  }
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [
+      key,
+      /(?:secret|token|authorization|app.?key)/i.test(key)
+        ? "[REDACTED]"
+        : redactSensitiveValue(entry, secrets)
+    ])
+  );
+}
+
+function getSafeResponseUrl(value) {
+  const parsedUrl = new URL(value);
+  for (const key of parsedUrl.searchParams.keys()) {
+    if (/(?:secret|token|authorization|app.?key)/i.test(key)) {
+      parsedUrl.searchParams.set(key, "[REDACTED]");
+    }
+  }
+  return parsedUrl.toString();
+}
+
+function saveResponsePreview(result) {
+  try {
+    const secrets = [
+      sessionToken,
+      ...Object.entries(variables)
+        .filter(([key, value]) => /(?:secret|token|authorization|app.?key)/i.test(key) && typeof value === "string")
+        .map(([, value]) => value)
+    ].filter(Boolean);
+    const safeResult = {
+      ...result,
+      url: getSafeResponseUrl(result.url),
+      data: redactSensitiveValue(result.data, secrets)
+    };
+    sessionStorage.setItem("feigeLastApiResponse", JSON.stringify(safeResult));
+    viewResponseBtn.hidden = false;
+    return true;
+  } catch (error) {
+    console.error("Could not save API response for HTML preview.", error);
+    viewResponseBtn.hidden = true;
+    return false;
+  }
+}
 
 function setStatus(type, text) {
   statusBadge.className = `status-badge ${type}`;
@@ -382,6 +441,8 @@ async function authenticate(event) {
 }
 
 async function sendRequest() {
+  viewResponseBtn.hidden = true;
+  let requestUrlForPreview = window.location.href;
   try {
     const currentVariables = getEffectiveVariables();
     const method = methodInput.value;
@@ -399,6 +460,7 @@ async function sendRequest() {
       resolveTemplate(rawPath, currentVariables),
       []
     );
+    requestUrlForPreview = url;
 
     let body = undefined;
     if (method !== "GET" && method !== "DELETE" && bodyText) {
@@ -444,6 +506,7 @@ async function sendRequest() {
     const apiSuccess = apiCode === undefined || apiCode === 200;
     const result = {
       status: response.status,
+      method,
       apiCode,
       ok: response.ok && apiSuccess,
       url,
@@ -452,9 +515,18 @@ async function sendRequest() {
 
     setStatus(response.ok && apiSuccess ? "success" : "error", `HTTP ${response.status}${apiCode === undefined ? "" : ` · API ${apiCode}`}`);
     responseOutput.textContent = JSON.stringify(result, null, 2);
+    saveResponsePreview(result);
   } catch (error) {
     setStatus("error", "Falha");
     responseOutput.textContent = `Erro na requisição: ${error.message}`;
+    saveResponsePreview({
+      status: 0,
+      method: methodInput.value,
+      apiCode: undefined,
+      ok: false,
+      url: requestUrlForPreview,
+      data: { error: error.message }
+    });
   }
 }
 

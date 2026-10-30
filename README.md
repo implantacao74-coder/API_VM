@@ -23,9 +23,13 @@ Open <http://127.0.0.1:8000>. Keep the backend running while using the app. If y
 
 The access token is kept in the current browser session and removed when you end the session. Review imported requests before sending them, especially requests that change data or control devices. API calls go through the local backend to avoid browser CORS restrictions.
 
+After an API request completes, select **Visualizar em HTML** to open a formatted response page. The viewer reads the latest result from the current browser session and redacts sensitive fields such as tokens and secrets.
+
 ## Monitoring page
 
 Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
+
+Open `monitor-tests.html` or select **Testes** in the monitoring navigation to test product channels and query a test task's result. Testing channels may activate the equipment and requires explicit confirmation.
 
 ## Command-line authentication diagnostic
 

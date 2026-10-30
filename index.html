@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07101f" />
+    <meta name="description" content="Autentique-se e envie solicitações para a API Feige." />
     <title>API Tester</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -22,6 +24,7 @@
     <div id="appShell" class="app-shell" hidden>
       <aside class="sidebar">
         <h1>Feige API Tester</h1>
+        <a class="sidebar-link" href="monitor.html">Abrir monitoração</a>
 
         <label for="jsonInput">Collection JSON do Postman</label>
         <textarea id="jsonInput" spellcheck="false" placeholder="Cole a collection.json da API..."></textarea>
@@ -92,6 +95,7 @@
             <h2>Resposta</h2>
             <span id="statusBadge" class="status-badge idle">Aguardando</span>
           </div>
+          <a id="viewResponseBtn" class="response-view-link" href="response-view.html" hidden>Visualizar em HTML</a>
           <pre id="responseOutput">{}</pre>
         </section>
       </main>
