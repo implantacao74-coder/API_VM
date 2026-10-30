@@ -12,7 +12,7 @@ py -m http.server 8000
 
 Open <http://localhost:8000> in a browser. Alternatively, open `index.html` using a local web-server extension such as Live Server.
 
-Enter the API base URL, App Key, and App Secret to authenticate. The default base URL is `https://veda.figeth.com/api/luobo-machine-api`. After authentication, load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**. The built-in sample contains authentication and device-list requests. Edit the variables, headers, path, or request body as needed, then select an endpoint and send the request.
+Enter the authentication URL, App Key, and App Secret to authenticate. The default authentication URL is `https://veda.figeth.com/api/auth/apply`; requests after login use the API base URL `https://veda.figeth.com/api/auth/apply`. After authentication, load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**. The built-in sample contains authentication and device-list requests. Edit the variables, headers, path, or request body as needed, then select an endpoint and send the request.
 
 The browser sends requests directly to the API. The API must allow the page's origin through CORS; this app does not provide a server-side proxy. The access token is kept in the current browser session and removed when you end the session. Do not publish App Keys, App Secrets, tokens, or other sensitive values. Review imported requests before sending them, especially requests that change data or control devices.
 
@@ -28,7 +28,7 @@ Open PowerShell in this folder and run:
 .\auth-test.ps1
 ```
 
-The script prompts for the App Key and App Secret. The secret is entered as a secure string. Credentials are sent in the JSON body of `POST /auth/apply` and are not included in curl's command-line arguments. Before the POST, the script sends an `OPTIONS` preflight using the configured origin and records the status and CORS headers.
+The script prompts for the App Key and App Secret. The secret is entered as a secure string. Credentials are sent in the JSON body of `POST https://veda.figeth.com/api/auth/apply` and are not included in curl's command-line arguments. Before the POST, the script sends an `OPTIONS` preflight using the configured origin and records the status and CORS headers.
 
 To use a different URL, origin, or log path:
 

@@ -13,9 +13,9 @@ const defaultJson = JSON.stringify(
           method: "POST",
           header: [{ key: "Content-Type", value: "application/json" }],
           url: {
-            raw: "{{baseUrl}}/auth/apply",
-            host: ["{{baseUrl}}"],
-            path: ["auth", "apply"],
+            raw: "https://veda.figeth.com/api/auth/apply",
+            host: ["veda", "figeth", "com"],
+            path: ["api", "auth", "apply"],
             query: []
           },
           auth: { type: "noauth" },
@@ -60,7 +60,7 @@ const defaultJson = JSON.stringify(
       }
     ],
     variable: [
-      { key: "baseUrl", value: "https://veda.figeth.com/api/luobo-machine-api" },
+      { key: "baseUrl", value: "https://veda.figeth.com/api/auth/apply" },
       { key: "appKey", value: "" },
       { key: "appSecret", value: "" },
       { key: "token", value: "" },
@@ -311,7 +311,6 @@ function buildRequestUrl(baseUrl, path, queryParams) {
 function showAuthenticatedApp() {
   loginScreen.hidden = true;
   appShell.hidden = false;
-  authBaseUrlInput.value = baseUrlInput.value || authBaseUrlInput.value;
 }
 
 function closeSession() {
@@ -334,8 +333,8 @@ async function authenticate(event) {
   loginBtn.textContent = "Autenticando...";
 
   try {
-    const baseUrl = authBaseUrlInput.value.trim().replace(/\/$/, "");
-    const response = await fetch(`${baseUrl}/auth/apply`, {
+    const authUrl = authBaseUrlInput.value.trim();
+    const response = await fetch(authUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -363,8 +362,7 @@ async function authenticate(event) {
 
     sessionToken = token.trim();
     sessionStorage.setItem("feigeAuthToken", sessionToken);
-    baseUrlInput.value = baseUrl;
-    variables = { ...variables, baseUrl, token: sessionToken };
+    variables = { ...variables, token: sessionToken };
     variablesInput.value = JSON.stringify(variables, null, 2);
     appSecretInput.value = "";
     showAuthenticatedApp();
@@ -493,7 +491,6 @@ fileInput.addEventListener("change", async (event) => {
 sendRequestBtn.addEventListener("click", sendRequest);
 jsonInput.value = defaultJson;
 loadFromJsonText();
-authBaseUrlInput.value = variables.baseUrl || authBaseUrlInput.value;
 
 if (sessionToken) {
   showAuthenticatedApp();
