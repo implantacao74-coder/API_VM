@@ -125,6 +125,35 @@
           O callback de pedidos é uma integração recebida pelo seu servidor, não uma chamada iniciada por esta página.
         </aside>
       </div>
+
+      <dialog id="inventoryDialog" class="inventory-dialog" aria-labelledby="inventoryTitle">
+        <div class="inventory-dialog-shell">
+          <header class="inventory-dialog-header">
+            <div>
+              <p class="monitor-eyebrow">VISÃO DE ESTOQUE</p>
+              <h2 id="inventoryTitle">Estoque do dispositivo</h2>
+              <p id="inventoryDeviceLabel" class="inventory-device-label"></p>
+            </div>
+            <button id="closeInventoryBtn" class="secondary inventory-close" type="button" aria-label="Fechar estoque">Fechar</button>
+          </header>
+          <p id="inventoryStatus" class="monitor-status" role="status">Aguardando consulta.</p>
+          <div id="inventorySummary" class="inventory-summary" hidden>
+            <article class="inventory-summary-card">
+              <span>Canais listados</span>
+              <strong id="inventoryListedCount">0</strong>
+            </article>
+            <article class="inventory-summary-card">
+              <span>Unidades disponíveis</span>
+              <strong id="inventoryCurrentTotal">0</strong>
+            </article>
+            <article class="inventory-summary-card">
+              <span>Capacidade total</span>
+              <strong id="inventoryCapacityTotal">0</strong>
+            </article>
+          </div>
+          <div id="inventoryCards" class="inventory-grid"></div>
+        </div>
+      </dialog>
     </main>
     <script src="monitor.js"></script>
   </body>

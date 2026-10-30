@@ -183,6 +183,16 @@ const refreshInterval = document.getElementById("refreshInterval");
 const previousPageBtn = document.getElementById("previousPageBtn");
 const nextPageBtn = document.getElementById("nextPageBtn");
 const devicePageLabel = document.getElementById("devicePageLabel");
+const inventoryDialog = document.getElementById("inventoryDialog");
+const inventoryTitle = document.getElementById("inventoryTitle");
+const inventoryDeviceLabel = document.getElementById("inventoryDeviceLabel");
+const inventoryStatus = document.getElementById("inventoryStatus");
+const inventorySummary = document.getElementById("inventorySummary");
+const inventoryListedCount = document.getElementById("inventoryListedCount");
+const inventoryCurrentTotal = document.getElementById("inventoryCurrentTotal");
+const inventoryCapacityTotal = document.getElementById("inventoryCapacityTotal");
+const inventoryCards = document.getElementById("inventoryCards");
+const closeInventoryBtn = document.getElementById("closeInventoryBtn");
 const token = sessionStorage.getItem("feigeAuthToken") || "";
 
 let refreshTimer;
@@ -321,6 +331,7 @@ function renderDevices(records) {
 
   for (const device of records) {
     const row = document.createElement("tr");
+    row.deviceRecord = device;
     const status = Number(device.status);
     const values = [
       ["Dispositivo", device.deviceName || "—"],
@@ -362,6 +373,155 @@ function renderDevices(records) {
   }
 }
 
+function findInventoryRecords(payload) {
+  let current = payload;
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (!current || typeof current !== "object") break;
+    if (Array.isArray(current.cargoPassageList)) return current.cargoPassageList;
+    if (Array.isArray(current.records)) return current.records;
+    if (Array.isArray(current.list)) return current.list;
+    if (current.result !== undefined) {
+      current = current.result;
+    } else if (current.data !== undefined) {
+      current = current.data;
+    } else {
+      break;
+    }
+  }
+  return [];
+}
+
+function formatInventoryCount(value) {
+  const count = Number(value);
+  return Number.isFinite(count) ? count.toLocaleString() : "—";
+}
+
+function renderInventory(records) {
+  inventoryCards.replaceChildren();
+  inventorySummary.hidden = false;
+
+  const listedRecords = records.filter((record) => Number(record.status) === 2);
+  const currentTotal = listedRecords.reduce((sum, record) => {
+    const count = Number(record.currentInventoryCount);
+    return sum + (Number.isFinite(count) ? count : 0);
+  }, 0);
+  const capacityTotal = listedRecords.reduce((sum, record) => {
+    const count = Number(record.capacity ?? record.totalInventoryCount);
+    return sum + (Number.isFinite(count) ? count : 0);
+  }, 0);
+
+  inventoryListedCount.textContent = listedRecords.length.toLocaleString();
+  inventoryCurrentTotal.textContent = currentTotal.toLocaleString();
+  inventoryCapacityTotal.textContent = capacityTotal.toLocaleString();
+
+  if (records.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "inventory-empty";
+    empty.textContent = "A API não retornou canais de estoque para este dispositivo.";
+    inventoryCards.appendChild(empty);
+    return;
+  }
+
+  for (const record of records) {
+    const currentCount = Number(record.currentInventoryCount);
+    const capacity = Number(record.capacity ?? record.totalInventoryCount);
+    const hasCounts = Number.isFinite(currentCount) && Number.isFinite(capacity);
+    const percentage = hasCounts && capacity > 0
+      ? Math.min(100, Math.max(0, (currentCount / capacity) * 100))
+      : 0;
+    const channelStatus = Number(record.status);
+    const isListed = channelStatus === 2;
+    const channelName = record.cargoPassageNo ?? record.cargoPassageId ?? record.id;
+
+    const card = document.createElement("article");
+    card.className = "inventory-card";
+
+    const heading = document.createElement("div");
+    heading.className = "inventory-card-heading";
+    const productDetails = document.createElement("div");
+    productDetails.className = "inventory-product-details";
+    const product = document.createElement("h3");
+    product.textContent = record.productName || record.categoryName ||
+      (channelName === undefined || channelName === null ? "Canal sem identificação" : `Canal ${channelName}`);
+    productDetails.appendChild(product);
+    if ((record.productName || record.categoryName) && channelName !== undefined && channelName !== null) {
+      const channel = document.createElement("p");
+      channel.textContent = `Canal ${channelName}`;
+      productDetails.appendChild(channel);
+    }
+    heading.appendChild(productDetails);
+
+    const status = document.createElement("span");
+    status.className = `inventory-state ${isListed ? "listed" : "delisted"}`;
+    status.textContent = isListed ? "Listado" : channelStatus === 1 ? "Desativado" : "Status desconhecido";
+    heading.appendChild(status);
+    card.appendChild(heading);
+
+    const counts = document.createElement("div");
+    counts.className = "inventory-counts";
+    const current = document.createElement("strong");
+    current.textContent = formatInventoryCount(record.currentInventoryCount);
+    const capacityLabel = document.createElement("span");
+    capacityLabel.textContent = `disponíveis · capacidade ${formatInventoryCount(record.capacity ?? record.totalInventoryCount)}`;
+    counts.append(current, capacityLabel);
+    card.appendChild(counts);
+
+    const registered = document.createElement("p");
+    registered.className = "inventory-registered-count";
+    registered.textContent = `Estoque total registrado: ${formatInventoryCount(record.totalInventoryCount)}`;
+    card.appendChild(registered);
+
+    const meter = document.createElement("div");
+    meter.className = "inventory-meter";
+    meter.setAttribute("role", "progressbar");
+    meter.setAttribute("aria-label", `Estoque de ${product.textContent}`);
+    meter.setAttribute("aria-valuemin", "0");
+    meter.setAttribute("aria-valuemax", hasCounts ? String(Math.max(capacity, 0)) : "0");
+    meter.setAttribute("aria-valuenow", hasCounts ? String(Math.max(currentCount, 0)) : "0");
+    const fill = document.createElement("span");
+    fill.style.width = `${percentage}%`;
+    if (percentage <= 20) fill.classList.add("low");
+    meter.appendChild(fill);
+    card.appendChild(meter);
+
+    if (record.categoryName && record.categoryName !== product.textContent) {
+      const category = document.createElement("p");
+      category.className = "inventory-category";
+      category.textContent = record.categoryName;
+      card.appendChild(category);
+    }
+    inventoryCards.appendChild(card);
+  }
+}
+
+async function showDeviceInventory(device) {
+  inventoryTitle.textContent = "Estoque do dispositivo";
+  inventoryDeviceLabel.textContent = `${device.deviceName || "Dispositivo"} · ID ${device.id ?? device.deviceUuid ?? "—"}`;
+  inventoryCards.replaceChildren();
+  inventorySummary.hidden = true;
+  setStatus(inventoryStatus, "Consultando estoque...");
+  if (!inventoryDialog.open) inventoryDialog.showModal();
+
+  const inventoryTool = getTool("inventory");
+  try {
+    const { response, payload } = await callApi(
+      inventoryTool,
+      { deviceId: String(device.id ?? device.deviceUuid ?? "") },
+      inventoryTool.body
+    );
+    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+    if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+      throw new Error(payload?.msg || payload?.message || `Falha ao consultar estoque (HTTP ${response.status}).`);
+    }
+
+    const records = findInventoryRecords(payload);
+    renderInventory(records);
+    setStatus(inventoryStatus, `Estoque atualizado às ${new Date().toLocaleTimeString()}.`, "success");
+  } catch (error) {
+    setStatus(inventoryStatus, error.message, "error");
+  }
+}
+
 function makeDeviceAction(label, toolId, queryKey, value) {
   const button = document.createElement("button");
   button.type = "button";
@@ -369,6 +529,12 @@ function makeDeviceAction(label, toolId, queryKey, value) {
   button.textContent = label;
   button.disabled = value === undefined || value === null;
   button.addEventListener("click", () => {
+    const device = button.closest("tr")?.deviceRecord;
+    if (toolId === "inventory" && device) {
+      showDeviceInventory(device);
+      return;
+    }
+
     toolSelect.value = toolId;
     updateToolForm();
     const query = JSON.parse(queryInput.value || "{}");
@@ -477,6 +643,10 @@ async function runTool() {
 
 toolSelect.addEventListener("change", updateToolForm);
 runToolBtn.addEventListener("click", runTool);
+closeInventoryBtn.addEventListener("click", () => inventoryDialog.close());
+inventoryDialog.addEventListener("click", (event) => {
+  if (event.target === inventoryDialog) inventoryDialog.close();
+});
 refreshDevicesBtn.addEventListener("click", refreshDevices);
 refreshInterval.addEventListener("change", configureRefresh);
 previousPageBtn.addEventListener("click", () => {

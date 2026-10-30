@@ -31,6 +31,8 @@ Open `monitor.html` from the same origin after authenticating. The page includes
 
 Open `monitor-tests.html` or select **Testes** in the monitoring navigation to test product channels and query a test task's result. Testing channels may activate the equipment and requires explicit confirmation.
 
+Select **Estoque** beside a device to open a visual inventory view with listed channels, available units, capacity, and stock-level bars; the response JSON is not shown.
+
 ## Command-line authentication diagnostic
 
 The authentication diagnostic runs through `curl.exe` in PowerShell, not through the browser. This allows direct inspection of the HTTP status and API response without browser-enforced CORS.

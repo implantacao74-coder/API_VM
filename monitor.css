@@ -359,6 +359,189 @@
   min-width: 190px;
 }
 
+.inventory-dialog {
+  width: min(1120px, calc(100vw - 32px));
+  max-width: 1120px;
+  max-height: min(88vh, 1100px);
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 22px;
+  background: #0b1424;
+  color: var(--text);
+  box-shadow: 0 28px 100px rgba(0, 0, 0, 0.56);
+}
+
+.inventory-dialog::backdrop {
+  background: rgba(2, 6, 16, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.inventory-dialog-shell {
+  max-height: min(88vh, 1100px);
+  overflow: auto;
+  padding: clamp(18px, 2vw, 32px);
+}
+
+.inventory-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.inventory-dialog-header h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 2.2vw, 2.3rem);
+}
+
+.inventory-device-label {
+  margin: 8px 0 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.inventory-close {
+  flex: 0 0 auto;
+}
+
+.inventory-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.inventory-summary-card {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(25, 39, 61, 0.72);
+}
+
+.inventory-summary-card span {
+  color: var(--muted);
+  font-size: 0.88em;
+}
+
+.inventory-summary-card strong {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+}
+
+.inventory-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(22, 36, 58, 0.95), rgba(15, 25, 42, 0.95));
+}
+
+.inventory-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inventory-product-details {
+  min-width: 0;
+}
+
+.inventory-product-details h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.05em;
+}
+
+.inventory-product-details p,
+.inventory-category {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.86em;
+}
+
+.inventory-state {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(52, 211, 153, 0.13);
+  color: #9af0c6;
+  font-size: 0.78em;
+  font-weight: 750;
+}
+
+.inventory-state.delisted {
+  background: rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+}
+
+.inventory-counts {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 22px 0 10px;
+}
+
+.inventory-counts strong {
+  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.inventory-counts span {
+  color: var(--muted);
+  font-size: 0.88em;
+}
+
+.inventory-registered-count {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.82em;
+}
+
+.inventory-meter {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.inventory-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #24c58a, #68e0ad);
+  transition: width 250ms ease;
+}
+
+.inventory-meter span.low {
+  background: linear-gradient(90deg, #f59e0b, #fb7185);
+}
+
+.inventory-category {
+  margin-top: 12px;
+}
+
+.inventory-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+
 @media (min-width: 1800px) {
   .monitor-header {
     margin-bottom: 36px;
@@ -513,6 +696,29 @@
   .tool-actions .primary,
   .test-result-form .primary {
     width: 100%;
+  }
+
+  .inventory-dialog {
+    width: calc(100vw - 20px);
+    max-height: 92vh;
+    border-radius: 17px;
+  }
+
+  .inventory-dialog-shell {
+    max-height: 92vh;
+    padding: 16px;
+  }
+
+  .inventory-dialog-header {
+    flex-direction: column;
+  }
+
+  .inventory-close {
+    width: 100%;
+  }
+
+  .inventory-summary {
+    grid-template-columns: 1fr;
   }
 }
 
