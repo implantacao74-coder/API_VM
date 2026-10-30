@@ -381,6 +381,146 @@ try {
     if (-not $httpStatus -or $httpStatus -lt 200 -or $httpStatus -ge 300 -or -not $tokenReceived) {
       exit 2
     }
+
+    $testDeviceList = (Read-Host "Autenticação concluída. Deseja testar a listagem de dispositivos? (S/N)") -match '^(?i:s|sim|y|yes)$'
+    if ($testDeviceList) {
+      $deviceListEndpoint = $BaseUrl.TrimEnd("/") + "/v1/device/list?pageNo=1&pageSize=50"
+      $deviceListResponseFile = Join-Path $temporaryDirectory "device-list-response.json"
+      $deviceListHeadersFile = Join-Path $temporaryDirectory "device-list-headers.txt"
+      $deviceListStderrFile = Join-Path $temporaryDirectory "device-list-error.txt"
+      $deviceListAuthorizationFile = Join-Path $temporaryDirectory "device-list-authorization.txt"
+      [IO.File]::WriteAllText(
+        $deviceListAuthorizationFile,
+        "Authorization: Bearer $token",
+        (New-Object Text.UTF8Encoding($false))
+      )
+      $deviceListCurlCommand = @(
+        "curl.exe",
+        "--silent",
+        "--show-error",
+        "--request", (ConvertTo-PowerShellLiteral -Value "POST"),
+        "--header", (ConvertTo-PowerShellLiteral -Value "Content-Type: application/json"),
+        "--header", (ConvertTo-PowerShellLiteral -Value "Authorization: [REDACTED]"),
+        "--data-raw", (ConvertTo-PowerShellLiteral -Value "{}"),
+        "--connect-timeout", "10",
+        "--max-time", [string]$TimeoutSeconds,
+        "--url", (ConvertTo-PowerShellLiteral -Value $deviceListEndpoint)
+      ) -join " "
+
+      $deviceListStopwatch = [Diagnostics.Stopwatch]::StartNew()
+      $deviceListArguments = @(
+        "--silent",
+        "--show-error",
+        "--request", "POST",
+        "--header", "Content-Type: application/json",
+        "--header", "@$deviceListAuthorizationFile",
+        "--data-raw", "{}",
+        "--dump-header", $deviceListHeadersFile,
+        "--output", $deviceListResponseFile,
+        "--write-out", "%{http_code}",
+        "--connect-timeout", "10",
+        "--max-time", [string]$TimeoutSeconds,
+        $deviceListEndpoint
+      )
+      $deviceListStatusOutput = & $curlCommand.Source @deviceListArguments 2> $deviceListStderrFile
+      $deviceListCurlExitCode = $LASTEXITCODE
+      $deviceListStopwatch.Stop()
+      $deviceListHttpStatus = $null
+      if ($deviceListStatusOutput -match '^\d{3}$') {
+        $deviceListHttpStatus = [int]$deviceListStatusOutput
+      }
+
+      $deviceListBody = $null
+      if (Test-Path -LiteralPath $deviceListResponseFile) {
+        $deviceListBody = [IO.File]::ReadAllText($deviceListResponseFile)
+      }
+      $deviceListPayload = $null
+      if (-not [string]::IsNullOrWhiteSpace($deviceListBody)) {
+        try {
+          $deviceListPayload = ConvertFrom-Json -InputObject $deviceListBody
+        } catch {
+          $deviceListPayload = $null
+        }
+      }
+
+      $deviceListApiCode = $null
+      $deviceListMessage = $null
+      $deviceListCount = $null
+      if ($deviceListPayload) {
+        if ($null -ne $deviceListPayload.code) {
+          $deviceListApiCode = $deviceListPayload.code
+        }
+        if ($deviceListPayload.msg) {
+          $deviceListMessage = [string]$deviceListPayload.msg
+        } elseif ($deviceListPayload.message) {
+          $deviceListMessage = [string]$deviceListPayload.message
+        }
+
+        $records = $null
+        if ($deviceListPayload.data.result.records) {
+          $records = $deviceListPayload.data.result.records
+        } elseif ($deviceListPayload.data.records) {
+          $records = $deviceListPayload.data.records
+        } elseif ($deviceListPayload.result.records) {
+          $records = $deviceListPayload.result.records
+        }
+        if ($records -is [array]) {
+          $deviceListCount = $records.Count
+        } elseif ($null -ne $records) {
+          $deviceListCount = 1
+        }
+        $safeDeviceListPayload = Protect-Object -Value $deviceListPayload -Secrets ($secrets + @($token))
+        $safeDeviceListBody = ConvertTo-Json -InputObject $safeDeviceListPayload -Depth 20 -Compress
+      } else {
+        $safeDeviceListBody = Protect-Text -Text $deviceListBody -Secrets ($secrets + @($token))
+        if ($safeDeviceListBody -and $safeDeviceListBody.Length -gt 10000) {
+          $safeDeviceListBody = $safeDeviceListBody.Substring(0, 10000) + "[TRUNCATED]"
+        }
+      }
+
+      $deviceListPassed = $deviceListCurlExitCode -eq 0 -and
+        $deviceListHttpStatus -ge 200 -and $deviceListHttpStatus -lt 300 -and
+        ($null -eq $deviceListApiCode -or $deviceListApiCode -eq 200)
+      $deviceListLogEntry = [ordered]@{
+        timestamp = [DateTime]::UtcNow.ToString("o")
+        test = "device-list"
+        client = "curl"
+        method = "POST"
+        endpoint = $deviceListEndpoint
+        curlCommand = $deviceListCurlCommand
+        durationMs = [int]$deviceListStopwatch.ElapsedMilliseconds
+        curlExitCode = $deviceListCurlExitCode
+        httpStatus = $deviceListHttpStatus
+        apiCode = $deviceListApiCode
+        deviceCount = $deviceListCount
+        message = $deviceListMessage
+        passed = $deviceListPassed
+        responseBody = $safeDeviceListBody
+      }
+      Write-RunLog -Entry $deviceListLogEntry
+
+      Write-Host "Device list URL: $deviceListEndpoint"
+      Write-Host "Device list HTTP status: $deviceListHttpStatus; API code: $deviceListApiCode"
+      if ($null -ne $deviceListCount) {
+        Write-Host "Devices returned: $deviceListCount"
+      }
+      if ($deviceListMessage) {
+        Write-Host "API message: $deviceListMessage"
+      }
+      Write-Host "Device list response (sensitive fields redacted):"
+      if ($safeDeviceListBody) {
+        Write-Host $safeDeviceListBody
+      } else {
+        Write-Host "(empty response)"
+      }
+      Write-Host "Log file: $([IO.Path]::GetFullPath($LogPath))"
+      if (-not $deviceListPassed) {
+        exit 4
+      }
+    } else {
+      Write-Host "Device list test skipped."
+    }
+
     if (-not $preflightAllowed) {
       exit 3
     }

@@ -4,7 +4,7 @@ const API_TOOLS = [
     id: "devices",
     label: "Listar dispositivos",
     method: "POST",
-    path: "/v1/device/list",
+    path: "/api/luobo-machine-api/api/v1/device/list",
     query: { pageNo: 1, pageSize: 50 },
     body: {},
     description: "Lista dispositivos. Filtros opcionais no corpo: deviceName e status (1 online, 2 offline)."
@@ -14,7 +14,7 @@ const API_TOOLS = [
     id: "inventory",
     label: "Listar estoque do dispositivo",
     method: "POST",
-    path: "/v1/deviceInventory/list",
+    path: "/api/luobo-machine-api/api/v1/deviceInventory/list",
     query: { deviceId: "" },
     body: {},
     description: "Consulta canais e quantidades de estoque. Query obrigatória: deviceId."
@@ -24,7 +24,7 @@ const API_TOOLS = [
     id: "replenish",
     label: "Atualizar estoque",
     method: "POST",
-    path: "/v1/deviceInventory/replenish",
+    path: "/api/luobo-machine-api/api/v1/deviceInventory/replenish",
     query: {},
     body: { infoList: [{ inventoryId: "", count: 0 }] },
     description: "Atualiza contagens após inventário físico. Cada elemento de infoList exige inventoryId e count.",
@@ -35,7 +35,7 @@ const API_TOOLS = [
     id: "channel-test",
     label: "Testar canais",
     method: "POST",
-    path: "/v1/deviceInventory/testChannel",
+    path: "/api/luobo-machine-api/api/v1/deviceInventory/testChannel",
     query: {},
     body: { deviceId: "", ids: [""] },
     description: "Aciona um teste nos canais selecionados. Retorna um ID para consultar o resultado.",
@@ -46,7 +46,7 @@ const API_TOOLS = [
     id: "channel-result",
     label: "Consultar teste de canais",
     method: "GET",
-    path: "/v1/deviceInventory/getTestResult",
+    path: "/api/luobo-machine-api/api/v1/deviceInventory/getTestResult",
     query: { id: "" },
     body: null,
     description: "Consulta o resultado de teste pelo ID da tarefa."
@@ -56,7 +56,7 @@ const API_TOOLS = [
     id: "products",
     label: "Listar produtos",
     method: "POST",
-    path: "/v1/productCategory/listPrivate",
+    path: "/api/luobo-machine-api/api/v1/productCategory/listPrivate",
     query: { pageNo: 1, pageSize: 50 },
     body: { name: "" },
     description: "Lista produtos com paginação. O filtro name é opcional."
@@ -66,7 +66,7 @@ const API_TOOLS = [
     id: "vend",
     label: "Dispensar produto",
     method: "POST",
-    path: "/v1/freeTier/vend",
+    path: "/api/luobo-machine-api/api/v1/freeTier/vend",
     query: {},
     body: { deviceId: "", cargoPassageIds: [""] },
     description: "Solicita dispensação pelos canais indicados. Retorna o ID da tarefa.",
@@ -77,7 +77,7 @@ const API_TOOLS = [
     id: "vend-result",
     label: "Consultar resultado da dispensação",
     method: "GET",
-    path: "/v1/freeTier/getVendorResult",
+    path: "/api/luobo-machine-api/api/v1/freeTier/getVendorResult",
     query: { vendorId: "" },
     body: null,
     description: "Consulta a tarefa de dispensação pelo vendorId."
@@ -87,7 +87,7 @@ const API_TOOLS = [
     id: "open-door",
     label: "Abrir porta",
     method: "POST",
-    path: "/v1/control/openDoor",
+    path: "/api/luobo-machine-api/api/v1/control/openDoor",
     query: {},
     body: { deviceId: "", delayClose: 3000 },
     description: "Abre a porta do smart cabinet. delayClose é informado em milissegundos.",
@@ -98,7 +98,7 @@ const API_TOOLS = [
     id: "close-door",
     label: "Fechar porta",
     method: "POST",
-    path: "/v1/control/closeDoor",
+    path: "/api/luobo-machine-api/api/v1/control/closeDoor",
     query: {},
     body: { deviceId: "" },
     description: "Solicita o fechamento da porta do smart cabinet.",
@@ -109,7 +109,7 @@ const API_TOOLS = [
     id: "door-status",
     label: "Consultar estado da porta",
     method: "POST",
-    path: "/v1/control/queryDoorStatus",
+    path: "/api/luobo-machine-api/api/v1/control/queryDoorStatus",
     query: {},
     body: { deviceId: "" },
     description: "Consulta mainOpen e subOpen: 0 = fechada; 1 = aberta."
@@ -119,7 +119,7 @@ const API_TOOLS = [
     id: "orders",
     label: "Listar pedidos",
     method: "GET",
-    path: "/v1/order/list",
+    path: "/api/luobo-machine-api/api/v1/order/list",
     query: { pageNo: 1, pageSize: 50 },
     body: null,
     description: "Lista pedidos. Filtros opcionais na query: device, orderNo, createTimeStart e createTimeEnd (YYYY-MM-DD)."
@@ -129,7 +129,7 @@ const API_TOOLS = [
     id: "coupon-generate",
     label: "Gerar cupons",
     method: "POST",
-    path: "/v1/coupon/generate",
+    path: "/api/luobo-machine-api/api/v1/coupon/generate",
     query: {},
     body: {
       name: "",
@@ -149,7 +149,7 @@ const API_TOOLS = [
     id: "coupons",
     label: "Listar cupons",
     method: "POST",
-    path: "/v1/coupon/list",
+    path: "/api/luobo-machine-api/api/v1/coupon/list",
     query: { pageNo: 1, pageSize: 50 },
     body: {},
     description: "Lista cupons. Filtro opcional no corpo: status (1 não utilizado, 2 utilizado)."
@@ -159,13 +159,14 @@ const API_TOOLS = [
     id: "coupon-code",
     label: "Consultar cupom por código",
     method: "GET",
-    path: "/v1/coupon/getByCode",
+    path: "/api/luobo-machine-api/api/v1/coupon/getByCode",
     query: { code: "" },
     body: null,
     description: "Consulta um cupom pelo código."
   }
 ];
 
+const monitorContent = document.getElementById("monitorContent");
 const loginNotice = document.getElementById("loginNotice");
 const toolSelect = document.getElementById("toolSelect");
 const toolDescription = document.getElementById("toolDescription");
@@ -182,14 +183,10 @@ const refreshInterval = document.getElementById("refreshInterval");
 const previousPageBtn = document.getElementById("previousPageBtn");
 const nextPageBtn = document.getElementById("nextPageBtn");
 const devicePageLabel = document.getElementById("devicePageLabel");
-const loginMessage = loginNotice.querySelector("p");
+const token = sessionStorage.getItem("feigeAuthToken") || "";
 
 let refreshTimer;
-let tokenRefreshTimer;
 let isRefreshing = false;
-let token = "";
-let tokenExpiresAt = 0;
-let authenticationPromise;
 let devicePage = 1;
 const devicePageSize = 50;
 
@@ -207,95 +204,6 @@ function getLocalBackendEndpoint(route) {
 function setStatus(element, message, type = "") {
   element.textContent = message;
   element.className = `monitor-status ${type}`.trim();
-}
-
-function getTokenFromPayload(payload) {
-  const tokenValue = payload?.data?.access_token || payload?.access_token;
-  return typeof tokenValue === "string" ? tokenValue.trim() : "";
-}
-
-function scheduleAuthenticationRefresh(expiresInMinutes) {
-  if (tokenRefreshTimer) {
-    window.clearTimeout(tokenRefreshTimer);
-  }
-  const refreshAfter = Math.max(10000, expiresInMinutes * 60 * 1000 - 60000);
-  tokenRefreshTimer = window.setTimeout(async () => {
-    try {
-      await authenticateMonitor();
-      await refreshDevices();
-    } catch (error) {
-      setStatus(deviceStatus, `Falha ao renovar a sessão: ${error.message}`, "error");
-      tokenRefreshTimer = window.setTimeout(() => {
-        authenticateMonitor().then(refreshDevices).catch((retryError) => {
-          setStatus(deviceStatus, `Falha ao renovar a sessão: ${retryError.message}`, "error");
-        });
-      }, 30000);
-    }
-  }, refreshAfter);
-}
-
-async function authenticateMonitor() {
-  if (authenticationPromise) {
-    return authenticationPromise;
-  }
-
-  authenticationPromise = (async () => {
-    loginNotice.hidden = false;
-    loginMessage.textContent = "Autenticando automaticamente com as credenciais locais...";
-    setStatus(deviceStatus, "Autenticando automaticamente...");
-    refreshDevicesBtn.disabled = true;
-    runToolBtn.disabled = true;
-
-    let response;
-    try {
-      response = await fetch(getLocalBackendEndpoint("/api/authenticate"), { method: "POST" });
-    } catch {
-      throw new Error("Não foi possível acessar o backend local. Inicie .\\start.ps1 e mantenha-o aberto.");
-    }
-
-    const responseText = await response.text();
-    let payload;
-    try {
-      payload = responseText ? JSON.parse(responseText) : {};
-    } catch {
-      throw new Error(`Resposta de autenticação inválida (HTTP ${response.status}).`);
-    }
-
-    if (!response.ok || (typeof payload.code === "number" && payload.code !== 200)) {
-      throw new Error(payload.message || payload.msg || `Autenticação recusada (HTTP ${response.status}).`);
-    }
-
-    const nextToken = getTokenFromPayload(payload);
-    if (!nextToken) {
-      throw new Error("A API não retornou um access_token válido.");
-    }
-
-    token = nextToken;
-    const expiresInMinutes = Number(payload.data?.expires_in) || 720;
-    tokenExpiresAt = Date.now() + expiresInMinutes * 60 * 1000;
-    sessionStorage.setItem("feigeAuthToken", token);
-    sessionStorage.setItem("feigeAuthTokenExpiresAt", String(tokenExpiresAt));
-    loginNotice.hidden = true;
-    refreshDevicesBtn.disabled = false;
-    runToolBtn.disabled = false;
-    setStatus(deviceStatus, "Autenticado. Consultando dispositivos...");
-    scheduleAuthenticationRefresh(expiresInMinutes);
-    return token;
-  })();
-
-  try {
-    return await authenticationPromise;
-  } catch (error) {
-    loginNotice.hidden = false;
-    loginMessage.textContent = `${error.message} Confira credentials.json e mantenha o backend ativo.`;
-    refreshDevicesBtn.disabled = true;
-    runToolBtn.disabled = true;
-    setStatus(deviceStatus, error.message, "error");
-    setStatus(toolStatus, error.message, "error");
-    throw error;
-  } finally {
-    authenticationPromise = undefined;
-  }
 }
 
 function getTool(id) {
@@ -325,7 +233,7 @@ function updateToolForm() {
   const tool = getTool(toolSelect.value);
   if (!tool) return;
 
-  toolDescription.textContent = `${tool.method} https://veda.figeth.com/api${tool.path} — ${tool.description}`;
+  toolDescription.textContent = `${tool.method} ${tool.path} — ${tool.description}`;
   toolWarning.hidden = !tool.risky;
   toolWarning.textContent = tool.risky || "";
   queryInput.value = JSON.stringify(tool.query, null, 2);
@@ -345,12 +253,8 @@ function queryString(query) {
 }
 
 async function callApi(tool, query, body) {
-  if (!token || tokenExpiresAt - Date.now() < 30000) {
-    await authenticateMonitor();
-  }
-
   if (!token) {
-    throw new Error("Não foi possível autenticar esta sessão.");
+    throw new Error("Sessão não encontrada. Entre pelo API Tester e autentique-se novamente.");
   }
 
   const queryText = queryString(query);
@@ -545,7 +449,7 @@ async function runTool() {
     const result = {
       operation: tool.label,
       method: tool.method,
-      path: `https://veda.figeth.com/api${apiPath}`,
+      path: apiPath,
       httpStatus: response.status,
       apiCode,
       ok: response.ok && apiSuccess,
@@ -584,5 +488,9 @@ nextPageBtn.addEventListener("click", () => {
 });
 
 setupToolOptions();
-loginNotice.hidden = false;
-authenticateMonitor().then(refreshDevices).catch(() => {});
+if (!token) {
+  monitorContent.hidden = true;
+  loginNotice.hidden = false;
+} else {
+  refreshDevices();
+}
