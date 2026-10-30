@@ -166,7 +166,6 @@ const API_TOOLS = [
   }
 ];
 
-const monitorContent = document.getElementById("monitorContent");
 const loginNotice = document.getElementById("loginNotice");
 const toolSelect = document.getElementById("toolSelect");
 const toolDescription = document.getElementById("toolDescription");
@@ -183,10 +182,14 @@ const refreshInterval = document.getElementById("refreshInterval");
 const previousPageBtn = document.getElementById("previousPageBtn");
 const nextPageBtn = document.getElementById("nextPageBtn");
 const devicePageLabel = document.getElementById("devicePageLabel");
-const token = sessionStorage.getItem("feigeAuthToken") || "";
+const loginMessage = loginNotice.querySelector("p");
 
 let refreshTimer;
+let tokenRefreshTimer;
 let isRefreshing = false;
+let token = "";
+let tokenExpiresAt = 0;
+let authenticationPromise;
 let devicePage = 1;
 const devicePageSize = 50;
 
@@ -204,6 +207,95 @@ function getLocalBackendEndpoint(route) {
 function setStatus(element, message, type = "") {
   element.textContent = message;
   element.className = `monitor-status ${type}`.trim();
+}
+
+function getTokenFromPayload(payload) {
+  const tokenValue = payload?.data?.access_token || payload?.access_token;
+  return typeof tokenValue === "string" ? tokenValue.trim() : "";
+}
+
+function scheduleAuthenticationRefresh(expiresInMinutes) {
+  if (tokenRefreshTimer) {
+    window.clearTimeout(tokenRefreshTimer);
+  }
+  const refreshAfter = Math.max(10000, expiresInMinutes * 60 * 1000 - 60000);
+  tokenRefreshTimer = window.setTimeout(async () => {
+    try {
+      await authenticateMonitor();
+      await refreshDevices();
+    } catch (error) {
+      setStatus(deviceStatus, `Falha ao renovar a sessão: ${error.message}`, "error");
+      tokenRefreshTimer = window.setTimeout(() => {
+        authenticateMonitor().then(refreshDevices).catch((retryError) => {
+          setStatus(deviceStatus, `Falha ao renovar a sessão: ${retryError.message}`, "error");
+        });
+      }, 30000);
+    }
+  }, refreshAfter);
+}
+
+async function authenticateMonitor() {
+  if (authenticationPromise) {
+    return authenticationPromise;
+  }
+
+  authenticationPromise = (async () => {
+    loginNotice.hidden = false;
+    loginMessage.textContent = "Autenticando automaticamente com as credenciais locais...";
+    setStatus(deviceStatus, "Autenticando automaticamente...");
+    refreshDevicesBtn.disabled = true;
+    runToolBtn.disabled = true;
+
+    let response;
+    try {
+      response = await fetch(getLocalBackendEndpoint("/api/authenticate"), { method: "POST" });
+    } catch {
+      throw new Error("Não foi possível acessar o backend local. Inicie .\\start.ps1 e mantenha-o aberto.");
+    }
+
+    const responseText = await response.text();
+    let payload;
+    try {
+      payload = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(`Resposta de autenticação inválida (HTTP ${response.status}).`);
+    }
+
+    if (!response.ok || (typeof payload.code === "number" && payload.code !== 200)) {
+      throw new Error(payload.message || payload.msg || `Autenticação recusada (HTTP ${response.status}).`);
+    }
+
+    const nextToken = getTokenFromPayload(payload);
+    if (!nextToken) {
+      throw new Error("A API não retornou um access_token válido.");
+    }
+
+    token = nextToken;
+    const expiresInMinutes = Number(payload.data?.expires_in) || 720;
+    tokenExpiresAt = Date.now() + expiresInMinutes * 60 * 1000;
+    sessionStorage.setItem("feigeAuthToken", token);
+    sessionStorage.setItem("feigeAuthTokenExpiresAt", String(tokenExpiresAt));
+    loginNotice.hidden = true;
+    refreshDevicesBtn.disabled = false;
+    runToolBtn.disabled = false;
+    setStatus(deviceStatus, "Autenticado. Consultando dispositivos...");
+    scheduleAuthenticationRefresh(expiresInMinutes);
+    return token;
+  })();
+
+  try {
+    return await authenticationPromise;
+  } catch (error) {
+    loginNotice.hidden = false;
+    loginMessage.textContent = `${error.message} Confira credentials.json e mantenha o backend ativo.`;
+    refreshDevicesBtn.disabled = true;
+    runToolBtn.disabled = true;
+    setStatus(deviceStatus, error.message, "error");
+    setStatus(toolStatus, error.message, "error");
+    throw error;
+  } finally {
+    authenticationPromise = undefined;
+  }
 }
 
 function getTool(id) {
@@ -253,8 +345,12 @@ function queryString(query) {
 }
 
 async function callApi(tool, query, body) {
+  if (!token || tokenExpiresAt - Date.now() < 30000) {
+    await authenticateMonitor();
+  }
+
   if (!token) {
-    throw new Error("Sessão não encontrada. Entre pelo API Tester e autentique-se novamente.");
+    throw new Error("Não foi possível autenticar esta sessão.");
   }
 
   const queryText = queryString(query);
@@ -488,9 +584,5 @@ nextPageBtn.addEventListener("click", () => {
 });
 
 setupToolOptions();
-if (!token) {
-  monitorContent.hidden = true;
-  loginNotice.hidden = false;
-} else {
-  refreshDevices();
-}
+loginNotice.hidden = false;
+authenticateMonitor().then(refreshDevices).catch(() => {});

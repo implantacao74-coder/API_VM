@@ -25,7 +25,7 @@ The access token is kept in the current browser session and removed when you end
 
 ## Monitoring page
 
-Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
+Open `monitor.html` from the same origin; the page authenticates automatically through the local backend using `credentials.json` and renews its token before expiry. It includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
 
 ## Command-line authentication diagnostic
 
