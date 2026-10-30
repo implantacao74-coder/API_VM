@@ -1,20 +1,28 @@
 # Feige API Tester
 
-This project contains a browser-based interface for authenticating with the Feige API and sending requests from a Postman collection, plus PowerShell scripts for command-line connectivity tests. It uses plain HTML, CSS, and JavaScript; there is no build step or package installation.
+This project contains a browser-based interface for authenticating with the Feige API and sending requests from a Postman collection, plus PowerShell scripts for command-line connectivity tests. The local backend uses Node.js 18 or newer built-ins; no package installation is required.
 
 ## Run the web app
 
-From this folder, start a local static web server in PowerShell:
+Use Windows PowerShell to create the local credentials file. Enter the App Key and App Secret when prompted:
 
 ```powershell
-py -m http.server 8000
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\setup-credentials.ps1
 ```
 
-Open <http://localhost:8000> in a browser. Alternatively, open `index.html` using a local web-server extension such as Live Server.
+The execution policy change applies only to the current PowerShell process. It is not saved to the machine or user profile.
 
-Enter the authentication URL, App Key, and App Secret to authenticate. The default authentication URL is `https://veda.figeth.com/api/auth/apply`; requests after login use the API base URL `https://veda.figeth.com/api/auth/apply`. After authentication, load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**. The built-in sample contains authentication and device-list requests. Edit the variables, headers, path, or request body as needed, then select an endpoint and send the request.
+The plain-text `credentials.json` file is excluded from Git and does not require administrator privileges. It is not encrypted, so anyone with access to the file can read the credentials. To start the app, run:
 
-The browser sends requests directly to the API. The API must allow the page's origin through CORS; this app does not provide a server-side proxy. The access token is kept in the current browser session and removed when you end the session. Do not publish App Keys, App Secrets, tokens, or other sensitive values. Review imported requests before sending them, especially requests that change data or control devices.
+```powershell
+.\start.ps1
+```
+
+Open <http://127.0.0.1:8000>. The browser calls the local backend to authenticate at `https://veda.figeth.com/api/auth/apply`; the backend reads credentials from `credentials.json`. The App Key and App Secret are not sent to or stored in the browser. After authentication, the app uses the returned token for API calls. Load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**.
+
+The access token is kept in the current browser session and removed when you end the session. Review imported requests before sending them, especially requests that change data or control devices.
+Requests after authentication still go directly from the browser to the configured API base URL and require that API to allow the app origin through CORS.
 
 ## Command-line authentication diagnostic
 
@@ -25,10 +33,11 @@ The authentication diagnostic runs through `curl.exe` in PowerShell, not through
 Open PowerShell in this folder and run:
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\auth-test.ps1
 ```
 
-The script prompts for the App Key and App Secret. The secret is entered as a secure string. Credentials are sent in the JSON body of `POST https://veda.figeth.com/api/auth/apply` and are not included in curl's command-line arguments. Before the POST, the script sends an `OPTIONS` preflight using the configured origin and records the status and CORS headers.
+The script reads the same `credentials.json` file as the web backend. It sends credentials in the JSON body of `POST https://veda.figeth.com/api/auth/apply`, not in curl's command-line arguments. Before the POST, the script sends an `OPTIONS` preflight using the configured origin and records the status and CORS headers.
 
 To use a different URL, origin, or log path:
 

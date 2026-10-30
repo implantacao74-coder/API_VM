@@ -17,7 +17,7 @@
         <p>Abra o PowerShell nesta pasta e execute:</p>
         <pre class="auth-test-log">.\auth-test.ps1</pre>
         <p>
-          O script solicita as credenciais sem exibir o segredo, testa
+          O script lê as credenciais do arquivo local <code>credentials.json</code> e testa
           <code>POST https://veda.figeth.com/api/auth/apply</code> e grava um log sanitizado em
           <code>logs\auth-test.jsonl</code>.
         </p>

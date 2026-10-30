@@ -92,9 +92,6 @@ const responseOutput = document.getElementById("responseOutput");
 const statusBadge = document.getElementById("statusBadge");
 const loginScreen = document.getElementById("loginScreen");
 const loginForm = document.getElementById("loginForm");
-const authBaseUrlInput = document.getElementById("authBaseUrlInput");
-const appKeyInput = document.getElementById("appKeyInput");
-const appSecretInput = document.getElementById("appSecretInput");
 const loginError = document.getElementById("loginError");
 const loginBtn = document.getElementById("loginBtn");
 const appShell = document.getElementById("appShell");
@@ -320,8 +317,6 @@ function closeSession() {
   variablesInput.value = JSON.stringify(variables, null, 2);
   appShell.hidden = true;
   loginScreen.hidden = false;
-  appKeyInput.value = "";
-  appSecretInput.value = "";
   loginError.hidden = true;
   loginError.textContent = "";
 }
@@ -333,15 +328,7 @@ async function authenticate(event) {
   loginBtn.textContent = "Autenticando...";
 
   try {
-    const authUrl = authBaseUrlInput.value.trim();
-    const response = await fetch(authUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        appKey: appKeyInput.value.trim(),
-        appSecret: appSecretInput.value
-      })
-    });
+    const response = await fetch("/api/authenticate", { method: "POST" });
     const responseText = await response.text();
     let payload;
 
@@ -364,7 +351,6 @@ async function authenticate(event) {
     sessionStorage.setItem("feigeAuthToken", sessionToken);
     variables = { ...variables, token: sessionToken };
     variablesInput.value = JSON.stringify(variables, null, 2);
-    appSecretInput.value = "";
     showAuthenticatedApp();
   } catch (error) {
     loginError.textContent = error.message;

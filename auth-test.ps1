@@ -8,16 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function ConvertTo-PlainText {
-  param([Security.SecureString]$Value)
-
-  $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($Value)
-  try {
-    return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
-  } finally {
-    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
-  }
-}
+. (Join-Path $PSScriptRoot "credentials.ps1")
 
 function Protect-Text {
   param(
@@ -194,9 +185,9 @@ $authenticationCurlCommand = @(
   "--max-time", [string]$TimeoutSeconds,
   "--url", (ConvertTo-PowerShellLiteral -Value $endpoint)
 ) -join " "
-$appKey = Read-Host "Enter App Key"
-$secureSecret = Read-Host "Enter App Secret" -AsSecureString
-$appSecret = ConvertTo-PlainText -Value $secureSecret
+$credentials = Get-FeigeCredentials
+$appKey = $credentials.AppKey
+$appSecret = $credentials.AppSecret
 
 if ([string]::IsNullOrWhiteSpace($appKey) -or [string]::IsNullOrEmpty($appSecret)) {
   $appSecret = $null
@@ -205,6 +196,21 @@ if ([string]::IsNullOrWhiteSpace($appKey) -or [string]::IsNullOrEmpty($appSecret
 
 $temporaryDirectory = Join-Path ([IO.Path]::GetTempPath()) ("feige-auth-" + [Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $temporaryDirectory
+$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent().User
+$directoryAcl = New-Object System.Security.AccessControl.DirectorySecurity
+$directoryAcl.SetAccessRuleProtection($true, $false)
+$directoryAcl.SetOwner($currentUser)
+$inheritance = [System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor
+  [System.Security.AccessControl.InheritanceFlags]::ObjectInherit
+$directoryRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+  $currentUser,
+  [System.Security.AccessControl.FileSystemRights]::FullControl,
+  $inheritance,
+  [System.Security.AccessControl.PropagationFlags]::None,
+  [System.Security.AccessControl.AccessControlType]::Allow
+)
+$directoryAcl.SetAccessRule($directoryRule)
+Set-Acl -LiteralPath $temporaryDirectory -AclObject $directoryAcl
 $requestFile = Join-Path $temporaryDirectory "request.json"
 $responseFile = Join-Path $temporaryDirectory "response.json"
 $headersFile = Join-Path $temporaryDirectory "response-headers.txt"

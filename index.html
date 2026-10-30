@@ -10,16 +10,7 @@
     <main id="loginScreen" class="login-screen">
       <form id="loginForm" class="login-card">
         <h1>Feige API Tester</h1>
-        <p>Autentique-se para abrir uma sessão e acessar o testador.</p>
-
-        <label for="authBaseUrlInput">URL de autenticação</label>
-        <input id="authBaseUrlInput" type="url" value="https://veda.figeth.com/api/auth/apply" required />
-
-        <label for="appKeyInput">App Key</label>
-        <input id="appKeyInput" type="text" autocomplete="username" required />
-
-        <label for="appSecretInput">App Secret</label>
-        <input id="appSecretInput" type="password" autocomplete="current-password" required />
+        <p>Autentique-se para abrir uma sessão e acessar o testador. As credenciais são mantidas no servidor e não são enviadas pelo navegador.</p>
 
         <p id="loginError" class="login-error" role="alert" hidden></p>
         <button id="loginBtn" type="submit" class="primary">Autenticar e abrir sessão</button>
