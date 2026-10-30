@@ -60,7 +60,7 @@ const defaultJson = JSON.stringify(
       }
     ],
     variable: [
-      { key: "baseUrl", value: "https://veda.figeth.com/prod-api" },
+      { key: "baseUrl", value: "https://veda.figeth.com/api/luobo-machine-api" },
       { key: "appKey", value: "" },
       { key: "appSecret", value: "" },
       { key: "token", value: "" },

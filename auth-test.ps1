@@ -1,5 +1,5 @@
 param(
-  [string]$BaseUrl = "https://veda.figeth.com/prod-api",
+  [string]$BaseUrl = "https://veda.figeth.com/api/luobo-machine-api",
   [string]$Origin = "http://179.145.31.219:5500",
   [string]$LogPath = (Join-Path $PSScriptRoot "logs\auth-test.jsonl"),
   [ValidateRange(1, 300)]
