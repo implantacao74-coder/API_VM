@@ -19,10 +19,13 @@ The plain-text `credentials.json` file is excluded from Git and does not require
 .\start.ps1
 ```
 
-Open <http://127.0.0.1:8000>. The browser calls the local backend to authenticate at `https://veda.figeth.com/api/auth/apply`; the backend reads credentials from `credentials.json`. The App Key and App Secret are not sent to or stored in the browser. After authentication, the app uses the returned token for API calls. Load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**.
+Open <http://127.0.0.1:8000>. Keep the backend running while using the app. If you prefer VS Code Live Server on port 5500, start the backend in another PowerShell window first, then open `http://127.0.0.1:5500`; the page sends authentication to the backend on port 8000. Other ports and network-accessible origins are intentionally rejected. Authentication uses `https://veda.figeth.com/api/auth/apply`; protected API operations use the separate base URL `https://veda.figeth.com/api/luobo-machine-api`. The backend reads credentials from `credentials.json`; the App Key and App Secret are not sent to or stored in the browser. After authentication, the app uses the returned token for API calls. Load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**.
 
-The access token is kept in the current browser session and removed when you end the session. Review imported requests before sending them, especially requests that change data or control devices.
-Requests after authentication still go directly from the browser to the configured API base URL and require that API to allow the app origin through CORS.
+The access token is kept in the current browser session and removed when you end the session. Review imported requests before sending them, especially requests that change data or control devices. API calls go through the local backend to avoid browser CORS restrictions.
+
+## Monitoring page
+
+Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
 
 ## Command-line authentication diagnostic
 

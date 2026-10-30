@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoração Feige</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="monitor.css" />
+  </head>
+  <body>
+    <main class="monitor-page">
+      <header class="monitor-header">
+        <div>
+          <p class="monitor-eyebrow">FEIGE API · OPERAÇÃO</p>
+          <h1>Monitoração</h1>
+          <p class="monitor-subtitle">Dispositivos, estoque, pedidos e ferramentas da API em um só lugar.</p>
+        </div>
+        <nav class="monitor-nav" aria-label="Navegação">
+          <a href="index.html">API Tester</a>
+          <button id="refreshDevicesBtn" class="secondary" type="button">Atualizar dispositivos</button>
+        </nav>
+      </header>
+
+      <section id="loginNotice" class="monitor-notice" hidden>
+        <p>Não há uma sessão ativa neste navegador. Entre no API Tester e autentique-se para continuar.</p>
+        <a class="monitor-button" href="index.html">Ir para autenticação</a>
+      </section>
+
+      <div id="monitorContent">
+        <section class="monitor-metrics" aria-label="Resumo dos dispositivos">
+          <article class="metric-card">
+            <span>Dispositivos nesta página</span>
+            <strong id="deviceCount">—</strong>
+          </article>
+          <article class="metric-card metric-online">
+            <span>Online</span>
+            <strong id="onlineCount">—</strong>
+          </article>
+          <article class="metric-card metric-offline">
+            <span>Offline</span>
+            <strong id="offlineCount">—</strong>
+          </article>
+          <article class="metric-card">
+            <span>Última atualização</span>
+            <strong id="lastUpdated">—</strong>
+          </article>
+        </section>
+
+        <section class="monitor-panel">
+          <div class="monitor-section-heading">
+            <div>
+              <h2>Dispositivos</h2>
+              <p>Estado reportado pela API. Selecione uma ação para abrir estoque ou consultar a porta.</p>
+            </div>
+            <label class="refresh-setting" for="refreshInterval">
+              Atualização automática
+              <select id="refreshInterval">
+                <option value="0">Desativada</option>
+                <option value="30">A cada 30 s</option>
+                <option value="60">A cada 60 s</option>
+              </select>
+            </label>
+          </div>
+          <p id="deviceStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <div class="device-pagination">
+            <button id="previousPageBtn" class="secondary" type="button" disabled>Anterior</button>
+            <span id="devicePageLabel">Página 1</span>
+            <button id="nextPageBtn" class="secondary" type="button" disabled>Próxima</button>
+          </div>
+          <div class="monitor-table-wrap">
+            <table class="monitor-table">
+              <thead>
+                <tr>
+                  <th>Dispositivo</th>
+                  <th>ID</th>
+                  <th>Estado</th>
+                  <th>4G / Wi-Fi</th>
+                  <th>Versão</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="deviceRows">
+                <tr><td colspan="6" class="empty-state">Autentique-se e atualize a lista.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="monitor-panel tools-panel">
+          <div class="monitor-section-heading">
+            <div>
+              <h2>Ferramentas da API</h2>
+              <p>Operações documentadas de dispositivos, estoque, produtos, pedidos e cupons.</p>
+            </div>
+          </div>
+          <div class="tool-grid">
+            <div>
+              <label for="toolSelect">Operação</label>
+              <select id="toolSelect"></select>
+              <p id="toolDescription" class="tool-description"></p>
+              <p id="toolWarning" class="tool-warning" hidden></p>
+            </div>
+            <div>
+              <label for="queryInput">Parâmetros de URL (JSON)</label>
+              <textarea id="queryInput" class="code-box tool-code" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <label for="bodyInput">Corpo JSON</label>
+              <textarea id="bodyInput" class="code-box tool-code" spellcheck="false"></textarea>
+            </div>
+          </div>
+          <div class="tool-actions">
+            <button id="runToolBtn" class="primary" type="button">Executar operação</button>
+            <span id="toolStatus" class="monitor-status" role="status">Aguardando.</span>
+          </div>
+          <pre id="toolOutput" class="monitor-output">{}</pre>
+        </section>
+
+        <aside class="monitor-note">
+          <strong>Ações operacionais:</strong> reposição, teste de canal, dispensação, controle de porta e geração de cupons
+          alteram dados ou acionam equipamentos; revise os parâmetros antes de confirmar.
+          O callback de pedidos é uma integração recebida pelo seu servidor, não uma chamada iniciada por esta página.
+        </aside>
+      </div>
+    </main>
+    <script src="monitor.js"></script>
+  </body>
+</html>

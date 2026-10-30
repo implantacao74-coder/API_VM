@@ -11,6 +11,7 @@
       <form id="loginForm" class="login-card">
         <h1>Feige API Tester</h1>
         <p>Autentique-se para abrir uma sessão e acessar o testador. As credenciais são mantidas no servidor e não são enviadas pelo navegador.</p>
+        <p class="auth-test-note">Inicie o backend com <code>.\start.ps1</code>. Abra <code>http://127.0.0.1:8000</code> ou use o Live Server em <code>http://127.0.0.1:5500</code>.</p>
 
         <p id="loginError" class="login-error" role="alert" hidden></p>
         <button id="loginBtn" type="submit" class="primary">Autenticar e abrir sessão</button>
@@ -49,11 +50,12 @@
       <main class="main-panel">
         <section class="toolbar">
           <label for="baseUrlInput">Base URL</label>
-          <input id="baseUrlInput" type="text" placeholder="https://api.exemplo.com" />
+          <input id="baseUrlInput" type="text" value="https://veda.figeth.com/api/luobo-machine-api" placeholder="https://veda.figeth.com/api/luobo-machine-api" />
 
           <label for="endpointSelect">Endpoint</label>
           <select id="endpointSelect"></select>
 
+          <a class="test-page-link" href="monitor.html">Abrir painel de monitoração</a>
           <button id="sendRequestBtn" type="button" class="primary">Enviar requisição</button>
           <button id="logoutBtn" type="button" class="secondary">Encerrar sessão</button>
         </section>

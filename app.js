@@ -60,7 +60,7 @@ const defaultJson = JSON.stringify(
       }
     ],
     variable: [
-      { key: "baseUrl", value: "https://veda.figeth.com/api/auth/apply" },
+      { key: "baseUrl", value: "https://veda.figeth.com/api/luobo-machine-api" },
       { key: "appKey", value: "" },
       { key: "appSecret", value: "" },
       { key: "token", value: "" },
@@ -321,6 +321,22 @@ function closeSession() {
   loginError.textContent = "";
 }
 
+function getLocalBackendEndpoint(route) {
+  const { hostname, port, protocol } = window.location;
+  const isLoopbackHost = hostname === "localhost" || hostname === "127.0.0.1";
+
+  if (protocol === "http:" && isLoopbackHost && port === "8000") {
+    return route;
+  }
+  if (protocol === "http:" && isLoopbackHost && port === "5500") {
+    return `http://127.0.0.1:8000${route}`;
+  }
+
+  throw new Error(
+    "Inicie o backend com .\\start.ps1 e abra http://127.0.0.1:8000 ou use o Live Server em http://127.0.0.1:5500."
+  );
+}
+
 async function authenticate(event) {
   event.preventDefault();
   loginError.hidden = true;
@@ -328,7 +344,7 @@ async function authenticate(event) {
   loginBtn.textContent = "Autenticando...";
 
   try {
-    const response = await fetch("/api/authenticate", { method: "POST" });
+    const response = await fetch(getLocalBackendEndpoint("/api/authenticate"), { method: "POST" });
     const responseText = await response.text();
     let payload;
 
@@ -340,6 +356,10 @@ async function authenticate(event) {
 
     if (!response.ok) {
       throw new Error(payload.message || payload.msg || `Autenticação recusada (HTTP ${response.status}).`);
+    }
+
+    if (typeof payload.code === "number" && payload.code !== 200) {
+      throw new Error(payload.msg || payload.message || `Autenticação recusada (código ${payload.code}).`);
     }
 
     const token = payload.data?.access_token || payload.access_token;
@@ -385,25 +405,30 @@ async function sendRequest() {
       body = JSON.parse(resolveTemplate(bodyText, currentVariables));
     }
 
-    const requestHeaders = { ...headers };
     const tokenValue = resolveTemplate(currentVariables.token || "", currentVariables);
-    if (tokenValue) {
-      requestHeaders.Authorization = `Bearer ${tokenValue}`;
+    if (!tokenValue) {
+      throw new Error("Sua sessão não possui um token. Faça login novamente.");
     }
 
-    const options = {
-      method,
-      headers: requestHeaders
-    };
-
-    if (body !== undefined) {
-      options.body = JSON.stringify(body);
+    const apiUrl = new URL(url);
+    if (apiUrl.origin !== "https://veda.figeth.com" || !apiUrl.pathname.startsWith("/api/")) {
+      throw new Error("As requisições devem usar o host Feige e um path /api/.");
     }
 
     setStatus("idle", "Enviando");
     responseOutput.textContent = "Enviando requisição...";
 
-    const response = await fetch(url, options);
+    const response = await fetch(getLocalBackendEndpoint("/api/proxy"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        path: `${apiUrl.pathname}${apiUrl.search}`,
+        method,
+        headers,
+        body,
+        token: tokenValue
+      })
+    });
     const contentType = response.headers.get("content-type") || "";
     let payload;
 
@@ -413,14 +438,19 @@ async function sendRequest() {
       payload = await response.text();
     }
 
+    const apiCode = payload && typeof payload === "object" && payload.code !== undefined && payload.code !== null
+      ? Number(payload.code)
+      : undefined;
+    const apiSuccess = apiCode === undefined || apiCode === 200;
     const result = {
       status: response.status,
-      ok: response.ok,
+      apiCode,
+      ok: response.ok && apiSuccess,
       url,
       data: payload
     };
 
-    setStatus(response.ok ? "success" : "error", `HTTP ${response.status}`);
+    setStatus(response.ok && apiSuccess ? "success" : "error", `HTTP ${response.status}${apiCode === undefined ? "" : ` · API ${apiCode}`}`);
     responseOutput.textContent = JSON.stringify(result, null, 2);
   } catch (error) {
     setStatus("error", "Falha");
