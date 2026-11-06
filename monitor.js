@@ -26,9 +26,9 @@ const API_TOOLS = [
     method: "POST",
     path: "/api/luobo-machine-api/api/v1/deviceInventory/replenish",
     query: {},
-    body: { infoList: [{ inventoryId: "", count: 0 }] },
-    description: "Atualiza contagens após inventário físico. Cada elemento de infoList exige inventoryId e count.",
-    risky: "Esta operação altera o estoque registrado. Confirme os IDs e quantidades antes de executar."
+    body: { infoList: [{ inventoryId: "ID_DO_ESTOQUE", count: 0 }] },
+    description: "Corpo: infoList aceita um ou mais itens; inventoryId é o campo id retornado ao listar o estoque e count é a quantidade física atual (zero é válido).",
+    risky: "Esta operação altera o estoque registrado. Substitua ID_DO_ESTOQUE pelo id do canal e count pela contagem física conferida. Count zero zera o estoque desse item."
   },
   {
     group: "Estoque",
@@ -166,6 +166,54 @@ const API_TOOLS = [
   }
 ];
 
+const RESULT_FIELD_LABELS = {
+  cargoPassageId: "ID do canal",
+  cargoPassageList: "Canais de estoque",
+  cargoPassageNo: "Número do canal",
+  capacity: "Capacidade",
+  categoryName: "Categoria",
+  code: "Código",
+  count: "Quantidade",
+  createTime: "Criado em",
+  currentInventoryCount: "Unidades disponíveis",
+  data: "Dados",
+  device: "Dispositivo",
+  deviceId: "ID do dispositivo",
+  deviceName: "Nome do dispositivo",
+  deviceUuid: "UUID do dispositivo",
+  deviceVersion: "Versão do dispositivo",
+  endDate: "Data final",
+  endTime: "Horário final",
+  id: "ID",
+  infoList: "Itens atualizados",
+  inventoryId: "ID do estoque",
+  list: "Itens",
+  mainOpen: "Porta principal",
+  message: "Mensagem",
+  msg: "Mensagem",
+  name: "Nome",
+  orderNo: "Número do pedido",
+  pageNo: "Página",
+  pageSize: "Itens por página",
+  productName: "Produto",
+  quantity: "Quantidade",
+  records: "Registros",
+  result: "Resultado",
+  rows: "Itens",
+  rule: "Regra",
+  startDate: "Data inicial",
+  startTime: "Horário inicial",
+  status: "Estado",
+  strength4g: "Sinal 4G",
+  strengthWifi: "Sinal Wi-Fi",
+  subOpen: "Porta secundária",
+  total: "Total",
+  totalCount: "Total de registros",
+  totalInventoryCount: "Estoque total registrado",
+  type: "Tipo",
+  vendorId: "ID da dispensação"
+};
+
 const monitorContent = document.getElementById("monitorContent");
 const loginNotice = document.getElementById("loginNotice");
 const toolSelect = document.getElementById("toolSelect");
@@ -194,6 +242,7 @@ const inventoryCapacityTotal = document.getElementById("inventoryCapacityTotal")
 const inventoryCards = document.getElementById("inventoryCards");
 const closeInventoryBtn = document.getElementById("closeInventoryBtn");
 const token = sessionStorage.getItem("feigeAuthToken") || "";
+refreshDevicesBtn.textContent = token ? "Monitorar" : "Autenticar";
 
 let refreshTimer;
 let isRefreshing = false;
@@ -248,8 +297,158 @@ function updateToolForm() {
   toolWarning.textContent = tool.risky || "";
   queryInput.value = JSON.stringify(tool.query, null, 2);
   bodyInput.value = tool.body === null ? "" : JSON.stringify(tool.body, null, 2);
-  queryInput.disabled = Object.keys(tool.query).length === 0;
+  queryInput.disabled = false;
   bodyInput.disabled = tool.body === null;
+}
+
+function resultLabel(key) {
+  return RESULT_FIELD_LABELS[key] || key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/^./, (character) => character.toLocaleUpperCase());
+}
+
+function resultValue(key, value, toolId) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+
+  if (["mainOpen", "subOpen"].includes(key) && [0, 1].includes(Number(value))) {
+    return Number(value) === 1 ? "Aberta" : "Fechada";
+  }
+  if (key === "status") {
+    if (toolId === "devices") return Number(value) === 1 ? "Online" : Number(value) === 2 ? "Offline" : String(value);
+    if (toolId === "inventory") return Number(value) === 2 ? "Listado" : Number(value) === 1 ? "Desativado" : String(value);
+    if (["coupons", "coupon-code"].includes(toolId)) return Number(value) === 1 ? "Não utilizado" : Number(value) === 2 ? "Utilizado" : String(value);
+  }
+  if (typeof value === "number" && !/(^id$|Id$|Uuid$|No$|Code$)/i.test(key)) {
+    return value.toLocaleString("pt-BR");
+  }
+  return String(value);
+}
+
+function createResultElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function formatResultCell(value, toolId, key = "") {
+  if (value === null || value === undefined) return "—";
+  if (Array.isArray(value)) return value.length ? `${value.length} itens` : "Nenhum item";
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .map(([key, item]) => `${resultLabel(key)}: ${resultValue(key, item, toolId)}`)
+      .join(" · ");
+  }
+  return resultValue(key, value, toolId);
+}
+
+function renderResultTable(parent, records, toolId) {
+  if (records.length === 0) {
+    parent.appendChild(createResultElement("p", "result-empty", "Nenhum registro encontrado."));
+    return;
+  }
+
+  const columns = [...new Set(records.flatMap((record) => Object.keys(record)))];
+  const wrapper = createResultElement("div", "result-table-wrap");
+  const table = createResultElement("table", "result-table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const column of columns) {
+    headerRow.appendChild(createResultElement("th", "", resultLabel(column)));
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  for (const record of records) {
+    const row = document.createElement("tr");
+    for (const column of columns) {
+      const cell = document.createElement("td");
+      cell.textContent = formatResultCell(record[column], toolId, column);
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  wrapper.appendChild(table);
+  parent.appendChild(wrapper);
+}
+
+function renderResultValue(parent, label, value, toolId, depth = 0) {
+  const section = createResultElement("section", "result-section");
+  if (label) section.appendChild(createResultElement("h3", "result-section-title", label));
+
+  if (Array.isArray(value)) {
+    if (value.length > 0 && value.every((item) => item && typeof item === "object" && !Array.isArray(item))) {
+      renderResultTable(section, value, toolId);
+    } else if (value.length > 0) {
+      const list = createResultElement("ul", "result-list");
+      for (const item of value) {
+        list.appendChild(createResultElement("li", "", formatResultCell(item, toolId)));
+      }
+      section.appendChild(list);
+    } else {
+      section.appendChild(createResultElement("p", "result-empty", "Nenhum item encontrado."));
+    }
+  } else if (value && typeof value === "object") {
+    if (depth >= 4) {
+      section.appendChild(createResultElement("p", "result-value", "Dados adicionais"));
+    } else {
+      const fields = createResultElement("dl", "result-fields");
+      for (const [key, item] of Object.entries(value)) {
+        if (item && typeof item === "object") {
+          renderResultValue(section, resultLabel(key), item, toolId, depth + 1);
+        } else {
+          const field = createResultElement("div", "result-field");
+          field.append(
+            createResultElement("dt", "", resultLabel(key)),
+            createResultElement("dd", "", resultValue(key, item, toolId))
+          );
+          fields.appendChild(field);
+        }
+      }
+      if (fields.childElementCount) section.appendChild(fields);
+      if (!section.childElementCount) section.appendChild(createResultElement("p", "result-empty", "Sem dados para exibir."));
+    }
+  } else {
+    section.appendChild(createResultElement("p", "result-value", resultValue("", value, toolId)));
+  }
+
+  parent.appendChild(section);
+}
+
+function renderToolResult(tool, response, payload, apiPath, succeeded) {
+  toolOutput.replaceChildren();
+  const header = createResultElement("div", "result-header");
+  header.append(
+    createResultElement("h3", "result-title", tool.label),
+    createResultElement("span", `result-status ${succeeded ? "success" : "error"}`, succeeded ? "Concluída" : "Falha")
+  );
+  toolOutput.appendChild(header);
+
+  const apiMessage = payload && typeof payload === "object" ? payload.msg || payload.message : "";
+  const message = succeeded ? "Operação concluída com sucesso." : apiMessage || `A operação falhou (HTTP ${response.status}).`;
+  toolOutput.appendChild(createResultElement("p", `result-message ${succeeded ? "" : "error"}`, message));
+
+  const metadata = createResultElement("dl", "result-meta");
+  for (const [label, value] of [["HTTP", `${response.status} ${response.statusText || ""}`.trim()], ["Código da API", payload?.code ?? "—"]]) {
+    const item = createResultElement("div", "result-meta-item");
+    item.append(createResultElement("dt", "", label), createResultElement("dd", "", String(value)));
+    metadata.appendChild(item);
+  }
+  toolOutput.appendChild(metadata);
+
+  const resultData = payload && typeof payload === "object" && Object.hasOwn(payload, "data")
+    ? payload.data
+    : payload;
+  renderResultValue(toolOutput, "Dados retornados", resultData, tool.id);
+
+  const rawDetails = createResultElement("details", "result-raw");
+  rawDetails.appendChild(createResultElement("summary", "", "Ver resposta original"));
+  rawDetails.appendChild(createResultElement("pre", "", JSON.stringify({ path: apiPath, payload }, null, 2)));
+  toolOutput.appendChild(rawDetails);
 }
 
 function queryString(query) {
@@ -612,29 +811,21 @@ async function runTool() {
 
   runToolBtn.disabled = true;
   setStatus(toolStatus, "Executando...");
-  toolOutput.textContent = "Enviando requisição...";
+  toolOutput.replaceChildren(createResultElement("p", "result-placeholder", "Enviando requisição..."));
   try {
     const { response, payload, apiPath } = await callApi(tool, query, body);
     const apiCode = payload && typeof payload === "object" ? payload.code : undefined;
     const apiSuccess = typeof apiCode !== "number" || apiCode === 200;
-    const result = {
-      operation: tool.label,
-      method: tool.method,
-      path: apiPath,
-      httpStatus: response.status,
-      apiCode,
-      ok: response.ok && apiSuccess,
-      data: payload
-    };
-    toolOutput.textContent = JSON.stringify(result, null, 2);
-    if (!response.ok || !apiSuccess) {
+    const succeeded = response.ok && apiSuccess;
+    renderToolResult(tool, response, payload, apiPath, succeeded);
+    if (!succeeded) {
       setStatus(toolStatus, payload.msg || payload.message || `Falha (HTTP ${response.status}).`, "error");
     } else {
       setStatus(toolStatus, "Operação concluída.", "success");
       if (tool.id === "devices") renderDevices(extractRecords(payload));
     }
   } catch (error) {
-    toolOutput.textContent = `Erro: ${error.message}`;
+    toolOutput.replaceChildren(createResultElement("p", "result-message error", `Erro: ${error.message}`));
     setStatus(toolStatus, error.message, "error");
   } finally {
     runToolBtn.disabled = false;
@@ -647,7 +838,13 @@ closeInventoryBtn.addEventListener("click", () => inventoryDialog.close());
 inventoryDialog.addEventListener("click", (event) => {
   if (event.target === inventoryDialog) inventoryDialog.close();
 });
-refreshDevicesBtn.addEventListener("click", refreshDevices);
+refreshDevicesBtn.addEventListener("click", () => {
+  if (!token) {
+    window.location.href = "index.html";
+    return;
+  }
+  refreshDevices();
+});
 refreshInterval.addEventListener("change", configureRefresh);
 previousPageBtn.addEventListener("click", () => {
   if (devicePage > 1) {

@@ -20,7 +20,7 @@
         <nav class="monitor-nav" aria-label="Navegação">
           <a href="monitor-tests.html">Testes</a>
           <a href="index.html">API Tester</a>
-          <button id="refreshDevicesBtn" class="secondary" type="button">Atualizar dispositivos</button>
+          <button id="refreshDevicesBtn" class="secondary" type="button">Autenticar</button>
         </nav>
       </header>
 
@@ -104,8 +104,8 @@
               <p id="toolWarning" class="tool-warning" hidden></p>
             </div>
             <div>
-              <label for="queryInput">Parâmetros de URL (JSON)</label>
-              <textarea id="queryInput" class="code-box tool-code" spellcheck="false"></textarea>
+              <label for="queryInput">Parâmetros de URL (JSON, editável)</label>
+              <textarea id="queryInput" class="code-box tool-code" spellcheck="false" placeholder='{"deviceId":"123"}'></textarea>
             </div>
             <div>
               <label for="bodyInput">Corpo JSON</label>
@@ -116,7 +116,9 @@
             <button id="runToolBtn" class="primary" type="button">Executar operação</button>
             <span id="toolStatus" class="monitor-status" role="status">Aguardando.</span>
           </div>
-          <pre id="toolOutput" class="monitor-output">{}</pre>
+          <section id="toolOutput" class="monitor-output" aria-live="polite">
+            <p class="result-placeholder">Os resultados das operações aparecerão aqui.</p>
+          </section>
         </section>
 
         <aside class="monitor-note">

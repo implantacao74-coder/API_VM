@@ -41,6 +41,16 @@ The access token is kept in the current browser session and removed when you end
 
 After an API request completes, select **Visualizar em HTML** to open a formatted response page. The viewer reads the latest result from the current browser session and redacts sensitive fields such as tokens and secrets.
 
+## Interactive terminal API tester
+
+To test the operations exposed in the monitoring page from PowerShell, run:
+
+```powershell
+.\api-terminal-test.ps1
+```
+
+The script authenticates with `credentials.json`, then prompts for the parameters required by each selected operation. It covers the 15 built-in monitoring/test operations and includes a custom-call option limited to the Feige API path. Responses are organized as readable labels and records, with HTTP status shown separately; they are not dumped as JSON. Tokens and secret fields are hidden. Changes to stock, coupon creation, channel tests, product dispensing, and cabinet door controls require typing `EXECUTAR` before sending. For coupon generation, enter device and product IDs or explicitly type `TODOS` for either scope. Use only with devices and accounts you are authorized to test; physical operations may activate equipment. API requests are sent directly to `https://veda.figeth.com`.
+
 ## Monitoring page
 
 Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
