@@ -13,13 +13,29 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 The execution policy change applies only to the current PowerShell process. It is not saved to the machine or user profile.
 
-If `credentials.json` already exists, confirm replacement with `y`, `yes`, `s`, or `sim`. The plain-text file is excluded from Git and does not require administrator privileges. It is not encrypted, so anyone with access to the file can read the credentials. To start the app, run:
+If `credentials.json` already exists, confirm replacement with `y`, `yes`, `s`, or `sim`. The plain-text file is excluded from Git and does not require administrator privileges. It is not encrypted, so anyone with access to the file can read the credentials.
+
+To start the backend and open the app automatically, run:
+
+```powershell
+.\open-tester.ps1
+```
+
+The script checks whether the backend is already running. If not, it starts the Node.js backend hidden in the background, waits for the app to respond, and opens <http://127.0.0.1:8000>. Startup output is saved in `logs\backend.log` and `logs\backend-error.log`. Alternatively, start the backend directly with:
 
 ```powershell
 .\start.ps1
 ```
 
-Open <http://127.0.0.1:8000>. Keep the backend running while using the app. If you prefer VS Code Live Server on port 5500, start the backend in another PowerShell window first, then open `http://127.0.0.1:5500`; the page sends authentication to the backend on port 8000. Other ports and network-accessible origins are intentionally rejected. Authentication uses `https://veda.figeth.com/api/auth/apply`; protected API operations use the separate base URL `https://veda.figeth.com/api/luobo-machine-api`. The backend reads credentials from `credentials.json`; the App Key and App Secret are not sent to or stored in the browser. After authentication, the app uses the returned token for API calls. Load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**.
+To start the backend from the **Autenticar e abrir sessão** button, install the Windows protocol handler once:
+
+```powershell
+.\install-protocol.ps1
+```
+
+When authentication is clicked and the backend is not running, the browser asks permission to open the Feige API Tester. Allow it; the backend starts hidden in the background and the page retries authentication. No PowerShell window remains open. This also works when using VS Code Live Server at `http://127.0.0.1:5500`. To remove the handler, run `.\uninstall-protocol.ps1`.
+
+The app sends authentication to the backend on port 8000. Other ports and network-accessible origins are intentionally rejected. Authentication uses `https://veda.figeth.com/api/auth/apply`; protected API operations use the separate base URL `https://veda.figeth.com/api/luobo-machine-api`. The backend reads credentials from `credentials.json`; the App Key and App Secret are not sent to or stored in the browser. After authentication, the app uses the returned token for API calls. Load a Postman collection by pasting its JSON, choosing a JSON file, or clicking **Collection Feige**.
 
 The access token is kept in the current browser session and removed when you end the session. Review imported requests before sending them, especially requests that change data or control devices. API calls go through the local backend to avoid browser CORS restrictions.
 

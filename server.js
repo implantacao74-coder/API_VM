@@ -268,6 +268,19 @@ const server = http.createServer(async (request, response) => {
     response.end("Invalid request URL");
     return;
   }
+  if (requestUrl.pathname === "/api/health") {
+    if (request.method !== "GET") {
+      response.writeHead(405, { Allow: "GET", "Cache-Control": "no-store" });
+      response.end();
+      return;
+    }
+    if (!validateLocalRequest(request, response)) {
+      return;
+    }
+    sendJson(response, 200, { status: "ok" }, request.headers.origin);
+    return;
+  }
+
   if (requestUrl.pathname === "/api/authenticate") {
     if (request.method === "OPTIONS") {
       handlePreflight(request, response);

@@ -396,6 +396,28 @@ function getLocalBackendEndpoint(route) {
   );
 }
 
+async function startBackendFromBrowser() {
+  window.location.href = "feige-tester://start";
+
+  const healthEndpoint = getLocalBackendEndpoint("/api/health");
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => window.setTimeout(resolve, 500));
+    try {
+      const response = await fetch(healthEndpoint, { cache: "no-store" });
+      if (response.ok) {
+        return;
+      }
+    } catch (error) {
+      // The backend is not ready yet; keep checking until the startup deadline.
+    }
+  }
+
+  throw new Error(
+    "Não foi possível iniciar o backend. Confirme a abertura do aplicativo no navegador e verifique se executou .\\install-protocol.ps1."
+  );
+}
+
 async function authenticate(event) {
   event.preventDefault();
   loginError.hidden = true;
@@ -403,7 +425,20 @@ async function authenticate(event) {
   loginBtn.textContent = "Autenticando...";
 
   try {
-    const response = await fetch(getLocalBackendEndpoint("/api/authenticate"), { method: "POST" });
+    const authEndpoint = getLocalBackendEndpoint("/api/authenticate");
+    let response;
+    try {
+      response = await fetch(authEndpoint, { method: "POST" });
+    } catch (error) {
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
+
+      loginBtn.textContent = "Iniciando backend...";
+      await startBackendFromBrowser();
+      response = await fetch(authEndpoint, { method: "POST" });
+    }
+
     const responseText = await response.text();
     let payload;
 
