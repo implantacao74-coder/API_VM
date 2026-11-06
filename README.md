@@ -13,7 +13,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 The execution policy change applies only to the current PowerShell process. It is not saved to the machine or user profile.
 
-The plain-text `credentials.json` file is excluded from Git and does not require administrator privileges. It is not encrypted, so anyone with access to the file can read the credentials. To start the app, run:
+If `credentials.json` already exists, confirm replacement with `y`, `yes`, `s`, or `sim`. The plain-text file is excluded from Git and does not require administrator privileges. It is not encrypted, so anyone with access to the file can read the credentials. To start the app, run:
 
 ```powershell
 .\start.ps1

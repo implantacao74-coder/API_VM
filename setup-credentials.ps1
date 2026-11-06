@@ -3,8 +3,8 @@ $ErrorActionPreference = "Stop"
 $credentialPath = Join-Path $PSScriptRoot "credentials.json"
 
 if (Test-Path -LiteralPath $credentialPath) {
-  $replace = Read-Host "Credentials file already exists. Replace it? (y/N)"
-  if ($replace -notin @("y", "Y")) {
+  $replace = Read-Host "Credentials file already exists. Replace it? (y/yes/s/sim/N)"
+  if ($replace -notmatch '^(?i:y|yes|s|sim)$') {
     Write-Host "Existing credentials were kept."
     return
   }
