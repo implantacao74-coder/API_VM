@@ -237,14 +237,16 @@ const runVendBtn = document.getElementById("runVendBtn");
 const vendStatus = document.getElementById("vendStatus");
 const vendOutput = document.getElementById("vendOutput");
 const refreshSalesBtn = document.getElementById("refreshSalesBtn");
+const salesStartDate = document.getElementById("salesStartDate");
+const salesEndDate = document.getElementById("salesEndDate");
+const applySalesPeriodBtn = document.getElementById("applySalesPeriodBtn");
 const salesStatus = document.getElementById("salesStatus");
 const salesTotal = document.getElementById("salesTotal");
 const salesPaid = document.getElementById("salesPaid");
 const salesRefunded = document.getElementById("salesRefunded");
 const salesDevices = document.getElementById("salesDevices");
 const latestSalesList = document.getElementById("latestSalesList");
-const olderSalesSection = document.getElementById("olderSalesSection");
-const olderSalesList = document.getElementById("olderSalesList");
+const periodSalesList = document.getElementById("periodSalesList");
 const deviceRows = document.getElementById("deviceRows");
 const deviceStatus = document.getElementById("deviceStatus");
 const refreshDevicesBtn = document.getElementById("refreshDevicesBtn");
@@ -566,33 +568,28 @@ function getSaleDevice(order) {
     order.deviceUuid || "Máquina não identificada";
 }
 
-function renderSales(records, startTime, endTime, missingPaymentTimeCount) {
+function normalizeSales(records) {
   const sales = [];
+  let missingPaymentTimeCount = 0;
   for (const order of records) {
     const payTime = order.payTime ? new Date(order.payTime) : null;
     if (!payTime || !Number.isFinite(payTime.getTime())) {
       missingPaymentTimeCount += 1;
       continue;
     }
-    if (payTime >= startTime && payTime <= endTime) sales.push({ order, payTime });
+    sales.push({ order, payTime });
   }
   sales.sort((left, right) => right.payTime - left.payTime);
+  return { sales, missingPaymentTimeCount };
+}
 
-  salesTotal.textContent = sales.length.toLocaleString("pt-BR");
-  salesPaid.textContent = sales.filter(({ order }) => Number(order.payStatus) === 2).length.toLocaleString("pt-BR");
-  salesRefunded.textContent = sales.filter(({ order }) => Number(order.payStatus) === 3).length.toLocaleString("pt-BR");
-  salesDevices.textContent = new Set(sales.map(({ order }) => getSaleDevice(order))).size.toLocaleString("pt-BR");
-  latestSalesList.replaceChildren();
-  olderSalesList.replaceChildren();
-
+function appendSaleCards(parent, sales, emptyMessage) {
+  parent.replaceChildren();
   if (sales.length === 0) {
-    latestSalesList.appendChild(createResultElement("p", "sales-empty", "Nenhuma venda com horário de pagamento nas últimas 24 horas."));
-    olderSalesSection.hidden = true;
-    return missingPaymentTimeCount;
+    parent.appendChild(createResultElement("p", "sales-empty", emptyMessage));
+    return;
   }
-
-  const [latestSales, remainingSales] = [sales.slice(0, 10), sales.slice(10)];
-  const appendSale = (parent, { order, payTime }) => {
+  for (const { order, payTime } of sales) {
     const card = createResultElement("details", "sales-card");
     const summary = document.createElement("summary");
     const heading = createResultElement("span", "sales-order-heading");
@@ -610,34 +607,73 @@ function renderSales(records, startTime, endTime, missingPaymentTimeCount) {
     renderResultValue(details, "Detalhes da venda", order, "orders");
     card.appendChild(details);
     parent.appendChild(card);
-  };
-
-  latestSales.forEach((sale) => appendSale(latestSalesList, sale));
-  olderSalesSection.hidden = remainingSales.length === 0;
-  for (const sale of remainingSales) {
-    appendSale(olderSalesList, sale);
   }
-  return missingPaymentTimeCount;
+}
+
+function renderLatestSales(records) {
+  const { sales } = normalizeSales(records);
+  appendSaleCards(
+    latestSalesList,
+    sales.slice(0, 10),
+    "Nenhuma venda recente com horário de pagamento disponível."
+  );
+  return Math.min(sales.length, 10);
+}
+
+function renderPeriodSales(records, startTime, endTime) {
+  const { sales: allSales, missingPaymentTimeCount } = normalizeSales(records);
+  const sales = allSales.filter(({ payTime }) => payTime >= startTime && payTime <= endTime);
+  salesTotal.textContent = sales.length.toLocaleString("pt-BR");
+  salesPaid.textContent = sales.filter(({ order }) => Number(order.payStatus) === 2).length.toLocaleString("pt-BR");
+  salesRefunded.textContent = sales.filter(({ order }) => Number(order.payStatus) === 3).length.toLocaleString("pt-BR");
+  salesDevices.textContent = new Set(sales.map(({ order }) => getSaleDevice(order))).size.toLocaleString("pt-BR");
+  appendSaleCards(periodSalesList, sales, "Nenhuma venda encontrada no período selecionado.");
+  return { count: sales.length, missingPaymentTimeCount };
 }
 
 async function refreshSalesReport() {
   if (isLoadingSales) return;
   isLoadingSales = true;
   refreshSalesBtn.disabled = true;
+  applySalesPeriodBtn.disabled = true;
   setStatus(salesStatus, "Consultando vendas de todas as máquinas...");
 
-  const endTime = new Date();
-  const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
-  const queryStart = formatLocalDate(startTime);
-  const queryEnd = formatLocalDate(endTime);
+  const queryStart = salesStartDate.value;
+  const queryEnd = salesEndDate.value;
+  if (!queryStart || !queryEnd || queryStart > queryEnd) {
+    setStatus(salesStatus, "Informe um período válido: a data inicial deve ser anterior ou igual à data final.", "error");
+    isLoadingSales = false;
+    refreshSalesBtn.disabled = false;
+    applySalesPeriodBtn.disabled = false;
+    return;
+  }
+  const startDateParts = queryStart.split("-").map(Number);
+  const endDateParts = queryEnd.split("-").map(Number);
+  const startTime = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
+  const endTime = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2], 23, 59, 59, 999);
   const pageSize = 200;
-  const orders = [];
+  let periodOrders = [];
   let missingPaymentTimeCount = 0;
 
   try {
     const tool = getTool("orders");
+    setStatus(salesStatus, "Consultando as 10 vendas mais recentes...");
+    const { response: latestResponse, payload: latestPayload } = await callApi(
+      tool,
+      { pageNo: 1, pageSize },
+      {}
+    );
+    const latestApiCode = latestPayload && typeof latestPayload === "object" ? Number(latestPayload.code) : undefined;
+    if (!latestResponse.ok || (Number.isFinite(latestApiCode) && latestApiCode !== 200)) {
+      const message = latestPayload?.msg || latestPayload?.message || `Falha ao consultar as vendas mais recentes (HTTP ${latestResponse.status}).`;
+      throw new Error(message);
+    }
+    renderLatestSales(extractRecords(latestPayload));
+
     for (let pageNo = 1; ; pageNo += 1) {
-      setStatus(salesStatus, pageNo === 1 ? "Consultando pedidos..." : `Consultando página ${pageNo} de pedidos...`);
+      setStatus(salesStatus, pageNo === 1
+        ? "Consultando vendas do período..."
+        : `Consultando página ${pageNo} do período...`);
       const { response, payload } = await callApi(tool, {
         pageNo,
         pageSize
@@ -647,12 +683,12 @@ async function refreshSalesReport() {
       });
       const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
       if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
-        const message = payload?.msg || payload?.message || `Falha ao consultar vendas (HTTP ${response.status}).`;
-        throw new Error(`${message} (página ${pageNo} de pedidos).`);
+        const message = payload?.msg || payload?.message || `Falha ao consultar vendas do período (HTTP ${response.status}).`;
+        throw new Error(`${message} (página ${pageNo}).`);
       }
 
       const records = extractRecords(payload);
-      orders.push(...records);
+      periodOrders.push(...records);
       const totalCount = findOrderTotalCount(payload);
       if (records.length === 0 ||
         (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
@@ -664,14 +700,15 @@ async function refreshSalesReport() {
       }
     }
 
-    missingPaymentTimeCount = renderSales(orders, startTime, endTime, missingPaymentTimeCount);
-    const intervalLabel = `${startTime.toLocaleString("pt-BR")} a ${endTime.toLocaleString("pt-BR")}`;
+    const periodResult = renderPeriodSales(periodOrders, startTime, endTime);
+    missingPaymentTimeCount = periodResult.missingPaymentTimeCount;
+    const intervalLabel = `${startTime.toLocaleDateString("pt-BR")} a ${endTime.toLocaleDateString("pt-BR")}`;
     const omittedLabel = missingPaymentTimeCount
       ? ` ${missingPaymentTimeCount.toLocaleString("pt-BR")} pedido(s) sem horário de pagamento válido foram ignorados.`
       : "";
     setStatus(
       salesStatus,
-      `Atualizado às ${new Date().toLocaleTimeString("pt-BR")}. Período: ${intervalLabel}.${omittedLabel}`,
+      `Atualizado às ${new Date().toLocaleTimeString("pt-BR")}. Últimas 10 vendas sem limite de data; período consultado: ${intervalLabel}.${omittedLabel}`,
       missingPaymentTimeCount ? "" : "success"
     );
     lastSalesRefreshAt = new Date();
@@ -683,6 +720,7 @@ async function refreshSalesReport() {
   } finally {
     isLoadingSales = false;
     refreshSalesBtn.disabled = false;
+    applySalesPeriodBtn.disabled = false;
   }
 }
 
@@ -1168,6 +1206,7 @@ async function runTool() {
 toolSelect.addEventListener("change", updateToolForm);
 runToolBtn.addEventListener("click", runTool);
 refreshSalesBtn.addEventListener("click", refreshSalesReport);
+applySalesPeriodBtn.addEventListener("click", refreshSalesReport);
 vendDeviceSelect.addEventListener("change", () => {
   vendChannelRequestId += 1;
   vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Carregue os canais do equipamento selecionado."));
@@ -1216,6 +1255,10 @@ nextPageBtn.addEventListener("click", () => {
 });
 
 setupToolOptions();
+const defaultSalesEndDate = new Date();
+const defaultSalesStartDate = new Date(defaultSalesEndDate.getTime() - 24 * 60 * 60 * 1000);
+salesStartDate.value = formatLocalDate(defaultSalesStartDate);
+salesEndDate.value = formatLocalDate(defaultSalesEndDate);
 if (!token) {
   monitorContent.hidden = true;
   loginNotice.hidden = false;

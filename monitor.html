@@ -73,12 +73,21 @@
           <div class="monitor-section-heading">
             <div>
               <p class="monitor-eyebrow">RELATÓRIO AUTOMÁTICO</p>
-              <h2 id="salesTitle">Vendas das últimas 24 horas</h2>
-              <p>Pedidos de todas as máquinas, com detalhes de cada venda. Atualização automática a cada 5 minutos.</p>
+              <h2 id="salesTitle">Relatório de vendas</h2>
+              <p>As 10 vendas mais recentes sem limite de data e vendas detalhadas por período. Atualização automática a cada 5 minutos.</p>
             </div>
             <button id="refreshSalesBtn" class="secondary sales-refresh" type="button">Atualizar agora</button>
           </div>
           <p id="salesStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <div class="sales-period-filter">
+            <label for="salesStartDate">Data inicial
+              <input id="salesStartDate" type="date" />
+            </label>
+            <label for="salesEndDate">Data final
+              <input id="salesEndDate" type="date" />
+            </label>
+            <button id="applySalesPeriodBtn" class="primary" type="button">Buscar período</button>
+          </div>
           <div class="sales-summary" aria-label="Resumo das vendas">
             <article class="sales-summary-card">
               <span>Pedidos no período</span>
@@ -103,10 +112,10 @@
               <p class="sales-empty">As vendas mais recentes aparecerão aqui.</p>
             </div>
           </section>
-          <section id="olderSalesSection" class="sales-group" aria-labelledby="olderSalesTitle" aria-live="polite" hidden>
-            <h3 id="olderSalesTitle">Demais vendas das últimas 24 horas</h3>
-            <div id="olderSalesList" class="sales-list">
-              <p class="sales-empty">As vendas das últimas 24 horas aparecerão aqui.</p>
+          <section class="sales-group" aria-labelledby="periodSalesTitle" aria-live="polite">
+            <h3 id="periodSalesTitle">Vendas no período selecionado</h3>
+            <div id="periodSalesList" class="sales-list">
+              <p class="sales-empty">Selecione o período e busque as vendas.</p>
             </div>
           </section>
         </section>
