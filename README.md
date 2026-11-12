@@ -53,7 +53,7 @@ The script authenticates with `credentials.json`, then prompts for the parameter
 
 ## Monitoring page
 
-Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. The first panel provides a guided product-dispensing form: select a device, load its listed stock channels, select one or more channels, and confirm before sending the physical operation. The response includes the dispensing task ID, which can be used to query its result. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
+Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. The first panel provides a guided product-dispensing form: select a device, load its listed stock channels, select one or more channels, and confirm before sending the physical operation. The response includes the dispensing task ID, which can be used to query its result. Directly below it, the sales report loads paginated orders for all devices, filters payment times to the last rolling 24 hours, shows the 10 most recent sales first followed by the remaining sales in that 24-hour period (without duplicating the first 10), and refreshes automatically every five minutes; **Atualizar agora** triggers an immediate refresh. Orders without a valid payment time are omitted and reported in the status. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
 
 Open `monitor-tests.html` or select **Testes** in the monitoring navigation to test product channels and query a test task's result. Testing channels may activate the equipment and requires explicit confirmation.
 
@@ -272,7 +272,7 @@ The response contains `mainOpen` and `subOpen`: `0` = closed, `1` = open.
 
 #### List orders
 
-`GET /api/v1/order/list`
+`POST /api/v1/order/list`
 
 | Field | Location | Type | Required | Description |
 |---|---|---|---|---|
@@ -282,6 +282,8 @@ The response contains `mainOpen` and `subOpen`: `0` = closed, `1` = open.
 | `orderNo` | JSON body | String | No | Order number |
 | `createTimeStart` | JSON body | Date | No | Payment start time; defaults to today |
 | `createTimeEnd` | JSON body | Date | No | Payment end time; defaults to today |
+
+The JSON body is required; send `{}` when no filters are specified.
 
 Order records include `orderNo`, `orderItemList`, `payTime`, `payStatus`,
 `refundTime`, and `returnMoney`. The manual documents `payStatus` as `2` = successful

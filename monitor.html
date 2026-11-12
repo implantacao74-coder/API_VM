@@ -69,6 +69,48 @@
           </section>
         </section>
 
+        <section class="monitor-panel sales-panel" aria-labelledby="salesTitle">
+          <div class="monitor-section-heading">
+            <div>
+              <p class="monitor-eyebrow">RELATÓRIO AUTOMÁTICO</p>
+              <h2 id="salesTitle">Vendas das últimas 24 horas</h2>
+              <p>Pedidos de todas as máquinas, com detalhes de cada venda. Atualização automática a cada 5 minutos.</p>
+            </div>
+            <button id="refreshSalesBtn" class="secondary sales-refresh" type="button">Atualizar agora</button>
+          </div>
+          <p id="salesStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <div class="sales-summary" aria-label="Resumo das vendas">
+            <article class="sales-summary-card">
+              <span>Pedidos no período</span>
+              <strong id="salesTotal">—</strong>
+            </article>
+            <article class="sales-summary-card">
+              <span>Pagamentos concluídos</span>
+              <strong id="salesPaid">—</strong>
+            </article>
+            <article class="sales-summary-card">
+              <span>Reembolsados</span>
+              <strong id="salesRefunded">—</strong>
+            </article>
+            <article class="sales-summary-card">
+              <span>Máquinas com vendas</span>
+              <strong id="salesDevices">—</strong>
+            </article>
+          </div>
+          <section class="sales-group" aria-labelledby="latestSalesTitle" aria-live="polite">
+            <h3 id="latestSalesTitle">10 vendas mais recentes</h3>
+            <div id="latestSalesList" class="sales-list">
+              <p class="sales-empty">As vendas mais recentes aparecerão aqui.</p>
+            </div>
+          </section>
+          <section id="olderSalesSection" class="sales-group" aria-labelledby="olderSalesTitle" aria-live="polite" hidden>
+            <h3 id="olderSalesTitle">Demais vendas das últimas 24 horas</h3>
+            <div id="olderSalesList" class="sales-list">
+              <p class="sales-empty">As vendas das últimas 24 horas aparecerão aqui.</p>
+            </div>
+          </section>
+        </section>
+
         <section class="monitor-metrics" aria-label="Resumo dos dispositivos">
           <article class="metric-card">
             <span>Dispositivos nesta página</span>

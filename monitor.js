@@ -118,11 +118,11 @@ const API_TOOLS = [
     group: "Pedidos",
     id: "orders",
     label: "Listar pedidos",
-    method: "GET",
+    method: "POST",
     path: "/api/luobo-machine-api/api/v1/order/list",
     query: { pageNo: 1, pageSize: 50 },
-    body: null,
-    description: "Lista pedidos. Filtros opcionais na query: device, orderNo, createTimeStart e createTimeEnd (YYYY-MM-DD)."
+    body: {},
+    description: "Lista pedidos. A API exige um corpo JSON para os filtros opcionais device, orderNo, createTimeStart e createTimeEnd (YYYY-MM-DD); paginação enviada na query."
   },
   {
     group: "Cupons",
@@ -195,6 +195,9 @@ const RESULT_FIELD_LABELS = {
   orderNo: "Número do pedido",
   pageNo: "Página",
   pageSize: "Itens por página",
+  payStatus: "Estado do pagamento",
+  payTime: "Pago em",
+  payAmount: "Valor pago",
   productName: "Produto",
   quantity: "Quantidade",
   records: "Registros",
@@ -233,6 +236,15 @@ const vendChannelList = document.getElementById("vendChannelList");
 const runVendBtn = document.getElementById("runVendBtn");
 const vendStatus = document.getElementById("vendStatus");
 const vendOutput = document.getElementById("vendOutput");
+const refreshSalesBtn = document.getElementById("refreshSalesBtn");
+const salesStatus = document.getElementById("salesStatus");
+const salesTotal = document.getElementById("salesTotal");
+const salesPaid = document.getElementById("salesPaid");
+const salesRefunded = document.getElementById("salesRefunded");
+const salesDevices = document.getElementById("salesDevices");
+const latestSalesList = document.getElementById("latestSalesList");
+const olderSalesSection = document.getElementById("olderSalesSection");
+const olderSalesList = document.getElementById("olderSalesList");
 const deviceRows = document.getElementById("deviceRows");
 const deviceStatus = document.getElementById("deviceStatus");
 const refreshDevicesBtn = document.getElementById("refreshDevicesBtn");
@@ -257,6 +269,9 @@ let refreshTimer;
 let isRefreshing = false;
 let vendChannelRequestId = 0;
 let isDispensing = false;
+let isLoadingSales = false;
+let salesRefreshTimer;
+let lastSalesRefreshAt;
 let devicePage = 1;
 const devicePageSize = 50;
 
@@ -330,6 +345,9 @@ function resultValue(key, value, toolId) {
     if (toolId === "devices") return Number(value) === 1 ? "Online" : Number(value) === 2 ? "Offline" : String(value);
     if (toolId === "inventory") return Number(value) === 2 ? "Listado" : Number(value) === 1 ? "Desativado" : String(value);
     if (["coupons", "coupon-code"].includes(toolId)) return Number(value) === 1 ? "Não utilizado" : Number(value) === 2 ? "Utilizado" : String(value);
+  }
+  if (key === "payStatus" && toolId === "orders") {
+    return Number(value) === 2 ? "Pagamento concluído" : Number(value) === 3 ? "Reembolsado" : String(value);
   }
   if (typeof value === "number" && !/(^id$|Id$|Uuid$|No$|Code$)/i.test(key)) {
     return value.toLocaleString("pt-BR");
@@ -517,6 +535,155 @@ function extractRecords(payload) {
     }
   }
   return [];
+}
+
+function formatLocalDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function findOrderTotalCount(payload) {
+  let current = payload;
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (!current || typeof current !== "object") break;
+    const total = Number(current.totalCount ?? current.total);
+    if (Number.isFinite(total) && total >= 0) return total;
+    if (current.result !== undefined) current = current.result;
+    else if (current.data !== undefined) current = current.data;
+    else break;
+  }
+  return undefined;
+}
+
+function getSaleDevice(order) {
+  const device = order.device;
+  if (device && typeof device === "object") {
+    return device.deviceName || device.name || device.deviceUuid || device.id || "Máquina não identificada";
+  }
+  return order.deviceName || (typeof device === "string" ? device : "") ||
+    order.deviceUuid || "Máquina não identificada";
+}
+
+function renderSales(records, startTime, endTime, missingPaymentTimeCount) {
+  const sales = [];
+  for (const order of records) {
+    const payTime = order.payTime ? new Date(order.payTime) : null;
+    if (!payTime || !Number.isFinite(payTime.getTime())) {
+      missingPaymentTimeCount += 1;
+      continue;
+    }
+    if (payTime >= startTime && payTime <= endTime) sales.push({ order, payTime });
+  }
+  sales.sort((left, right) => right.payTime - left.payTime);
+
+  salesTotal.textContent = sales.length.toLocaleString("pt-BR");
+  salesPaid.textContent = sales.filter(({ order }) => Number(order.payStatus) === 2).length.toLocaleString("pt-BR");
+  salesRefunded.textContent = sales.filter(({ order }) => Number(order.payStatus) === 3).length.toLocaleString("pt-BR");
+  salesDevices.textContent = new Set(sales.map(({ order }) => getSaleDevice(order))).size.toLocaleString("pt-BR");
+  latestSalesList.replaceChildren();
+  olderSalesList.replaceChildren();
+
+  if (sales.length === 0) {
+    latestSalesList.appendChild(createResultElement("p", "sales-empty", "Nenhuma venda com horário de pagamento nas últimas 24 horas."));
+    olderSalesSection.hidden = true;
+    return missingPaymentTimeCount;
+  }
+
+  const [latestSales, remainingSales] = [sales.slice(0, 10), sales.slice(10)];
+  const appendSale = (parent, { order, payTime }) => {
+    const card = createResultElement("details", "sales-card");
+    const summary = document.createElement("summary");
+    const heading = createResultElement("span", "sales-order-heading");
+    heading.append(
+      createResultElement("strong", "", `Pedido ${order.orderNo || order.id || "sem número"}`),
+      createResultElement("span", "", getSaleDevice(order)),
+      createResultElement("time", "", payTime.toLocaleString("pt-BR"))
+    );
+    const status = Number(order.payStatus);
+    const statusLabel = status === 2 ? "Pagamento concluído" : status === 3 ? "Reembolsado" : `Status ${order.payStatus ?? "desconhecido"}`;
+    summary.append(heading, createResultElement("span", `sales-order-status ${status === 2 ? "paid" : status === 3 ? "refunded" : ""}`.trim(), statusLabel));
+    card.appendChild(summary);
+
+    const details = createResultElement("div", "sales-order-details");
+    renderResultValue(details, "Detalhes da venda", order, "orders");
+    card.appendChild(details);
+    parent.appendChild(card);
+  };
+
+  latestSales.forEach((sale) => appendSale(latestSalesList, sale));
+  olderSalesSection.hidden = remainingSales.length === 0;
+  for (const sale of remainingSales) {
+    appendSale(olderSalesList, sale);
+  }
+  return missingPaymentTimeCount;
+}
+
+async function refreshSalesReport() {
+  if (isLoadingSales) return;
+  isLoadingSales = true;
+  refreshSalesBtn.disabled = true;
+  setStatus(salesStatus, "Consultando vendas de todas as máquinas...");
+
+  const endTime = new Date();
+  const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+  const queryStart = formatLocalDate(startTime);
+  const queryEnd = formatLocalDate(endTime);
+  const pageSize = 200;
+  const orders = [];
+  let missingPaymentTimeCount = 0;
+
+  try {
+    const tool = getTool("orders");
+    for (let pageNo = 1; ; pageNo += 1) {
+      setStatus(salesStatus, pageNo === 1 ? "Consultando pedidos..." : `Consultando página ${pageNo} de pedidos...`);
+      const { response, payload } = await callApi(tool, {
+        pageNo,
+        pageSize
+      }, {
+        createTimeStart: queryStart,
+        createTimeEnd: queryEnd
+      });
+      const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+      if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+        const message = payload?.msg || payload?.message || `Falha ao consultar vendas (HTTP ${response.status}).`;
+        throw new Error(`${message} (página ${pageNo} de pedidos).`);
+      }
+
+      const records = extractRecords(payload);
+      orders.push(...records);
+      const totalCount = findOrderTotalCount(payload);
+      if (records.length === 0 ||
+        (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
+        (totalCount === undefined && records.length < pageSize)) {
+        break;
+      }
+      if (pageNo >= 1000) {
+        throw new Error("A consulta ultrapassou 1.000 páginas; revise o período ou a paginação da API.");
+      }
+    }
+
+    missingPaymentTimeCount = renderSales(orders, startTime, endTime, missingPaymentTimeCount);
+    const intervalLabel = `${startTime.toLocaleString("pt-BR")} a ${endTime.toLocaleString("pt-BR")}`;
+    const omittedLabel = missingPaymentTimeCount
+      ? ` ${missingPaymentTimeCount.toLocaleString("pt-BR")} pedido(s) sem horário de pagamento válido foram ignorados.`
+      : "";
+    setStatus(
+      salesStatus,
+      `Atualizado às ${new Date().toLocaleTimeString("pt-BR")}. Período: ${intervalLabel}.${omittedLabel}`,
+      missingPaymentTimeCount ? "" : "success"
+    );
+    lastSalesRefreshAt = new Date();
+  } catch (error) {
+    const previousDataLabel = lastSalesRefreshAt
+      ? ` Os dados exibidos são da última atualização válida às ${lastSalesRefreshAt.toLocaleTimeString("pt-BR")}.`
+      : "";
+    setStatus(salesStatus, `${error.message}${previousDataLabel}`, "error");
+  } finally {
+    isLoadingSales = false;
+    refreshSalesBtn.disabled = false;
+  }
 }
 
 function renderDevices(records) {
@@ -1000,6 +1167,7 @@ async function runTool() {
 
 toolSelect.addEventListener("change", updateToolForm);
 runToolBtn.addEventListener("click", runTool);
+refreshSalesBtn.addEventListener("click", refreshSalesReport);
 vendDeviceSelect.addEventListener("change", () => {
   vendChannelRequestId += 1;
   vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Carregue os canais do equipamento selecionado."));
@@ -1053,4 +1221,6 @@ if (!token) {
   loginNotice.hidden = false;
 } else {
   refreshDevices();
+  refreshSalesReport();
+  salesRefreshTimer = window.setInterval(refreshSalesReport, 5 * 60 * 1000);
 }

@@ -254,8 +254,22 @@ async function proxyApiRequest(request, response) {
       ...getCorsHeaders(origin)
     });
     response.end(responseBody);
-  } catch {
-    sendJson(response, 502, { message: "Could not reach the Feige API." }, origin);
+  } catch (error) {
+    const errorCode = error?.cause?.code;
+    const isTimeout = error?.name === "TimeoutError" ||
+      error?.cause?.name === "TimeoutError" ||
+      errorCode === "UND_ERR_CONNECT_TIMEOUT" ||
+      errorCode === "ETIMEDOUT";
+    console.error("[api/proxy] Feige request failed", {
+      method,
+      path: targetUrl.pathname,
+      error: errorCode || error?.name || "UnknownError"
+    });
+    sendJson(response, 502, {
+      message: isTimeout
+        ? "A consulta à API Feige excedeu o tempo limite."
+        : `Falha ao conectar com a API Feige${errorCode ? ` (${errorCode})` : "."}`
+    }, origin);
   }
 }
 

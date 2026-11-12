@@ -527,19 +527,20 @@ function Get-ApiRequestDefinition {
       $body = @{ deviceId = Read-RequiredValue "ID do dispositivo" }
     }
     "12" {
-      $method = "GET"
+      $method = "POST"
       $path = "$apiBasePath/api/v1/order/list"
       $query = @{
         pageNo = Read-IntegerValue "Página" 1
         pageSize = Read-IntegerValue "Itens por página" 50 1 200
       }
+      $body = @{}
       foreach ($filter in @("device", "orderNo", "createTimeStart", "createTimeEnd")) {
         $value = if ($filter -match "createTime") {
           Read-OptionalDate $filter
         } else {
           Read-OptionalValue "$filter (opcional)"
         }
-        if ($value) { $query[$filter] = $value }
+        if ($value) { $body[$filter] = $value }
       }
     }
     "13" {
