@@ -290,6 +290,8 @@ let salesRefreshTimer;
 let lastSalesRefreshAt;
 let devicePage = 1;
 const devicePageSize = 50;
+const SALES_TIME_ZONE = "Etc/GMT+3";
+const CHINA_UTC_OFFSET = "+08:00";
 
 function getLocalBackendEndpoint(route) {
   const { hostname, port, protocol } = window.location;
@@ -354,6 +356,9 @@ function resultValue(key, value, toolId) {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return value ? "Sim" : "Não";
 
+  if (toolId === "orders" && ["createTime", "payTime", "refundTime"].includes(key)) {
+    return formatSaleDateTime(value);
+  }
   if (toolId === "orders" && [
     "actualAmount", "amount", "orderAmount", "payAmount", "price", "returnMoney",
     "salePrice", "totalAmount", "totalMoney", "totalPrice"
@@ -560,10 +565,77 @@ function extractRecords(payload) {
 }
 
 function formatLocalDate(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatGmtMinus3Date(date);
+}
+
+function formatGmtMinus3Date(date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: SALES_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function formatGmtMinus3DateTime(date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: SALES_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+    timeZoneName: "short"
+  }).format(date);
+}
+
+function parseSaleDateTime(value) {
+  if (value instanceof Date) return Number.isFinite(value.getTime()) ? value : null;
+  if (typeof value === "number") {
+    const timestamp = Math.abs(value) < 1_000_000_000_000 ? value * 1000 : value;
+    const date = new Date(timestamp);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+  if (typeof value !== "string" || !value.trim()) return null;
+
+  const timestamp = value.trim();
+  const compactTimestamp = timestamp.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (compactTimestamp) {
+    const [, year, month, day, hour, minute, second] = compactTimestamp;
+    const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}${CHINA_UTC_OFFSET}`);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+
+  if (/[zZ]$|[+-]\d{2}:?\d{2}$/.test(timestamp)) {
+    const date = new Date(timestamp);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+
+  const localTimestamp = timestamp.match(/^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2})(?::(\d{2})(\.\d+)?)?)?$/);
+  if (!localTimestamp) return null;
+  const [, datePart, hourMinute = "00:00", seconds = "00", fraction = ""] = localTimestamp;
+  const milliseconds = fraction ? `.${fraction.slice(1).padEnd(3, "0").slice(0, 3)}` : "";
+  const date = new Date(`${datePart}T${hourMinute}:${seconds}${milliseconds}${CHINA_UTC_OFFSET}`);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function formatSaleDateTime(value) {
+  const date = parseSaleDateTime(value);
+  return date ? formatGmtMinus3DateTime(date) : "—";
+}
+
+function dateInputToGmtMinus3Boundary(value, isEnd = false) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, isEnd ? 26 : 3, isEnd ? 59 : 0, isEnd ? 59 : 0, isEnd ? 999 : 0));
+}
+
+function addCalendarDays(value, days) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
 function findOrderTotalCount(payload) {
@@ -646,7 +718,7 @@ function normalizeSales(records) {
   const sales = [];
   let missingPaymentTimeCount = 0;
   for (const order of records) {
-    const payTime = order.payTime ? new Date(order.payTime) : null;
+    const payTime = parseSaleDateTime(order.payTime);
     if (!payTime || !Number.isFinite(payTime.getTime())) {
       missingPaymentTimeCount += 1;
       continue;
@@ -671,7 +743,7 @@ function appendSaleCards(parent, sales, emptyMessage) {
       createResultElement("strong", "", `Pedido ${order.orderNo || order.id || "sem número"}`),
       createResultElement("span", "", getSaleDevice(order)),
       createResultElement("span", "sales-order-amount", formatSaleAmount(getSaleAmount(order))),
-      createResultElement("time", "", payTime.toLocaleString("pt-BR"))
+      createResultElement("time", "", formatSaleDateTime(payTime))
     );
     const status = Number(order.payStatus);
     const statusLabel = status === 2 ? "Pagamento concluído" : status === 3 ? "Reembolsado" : `Status ${order.payStatus ?? "desconhecido"}`;
@@ -722,10 +794,8 @@ async function refreshSalesReport() {
     applySalesPeriodBtn.disabled = false;
     return;
   }
-  const startDateParts = queryStart.split("-").map(Number);
-  const endDateParts = queryEnd.split("-").map(Number);
-  const startTime = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2]);
-  const endTime = new Date(endDateParts[0], endDateParts[1] - 1, endDateParts[2], 23, 59, 59, 999);
+  const startTime = dateInputToGmtMinus3Boundary(queryStart);
+  const endTime = dateInputToGmtMinus3Boundary(queryEnd, true);
   const pageSize = 200;
   let periodOrders = [];
   let missingPaymentTimeCount = 0;
@@ -754,7 +824,7 @@ async function refreshSalesReport() {
         pageSize
       }, {
         createTimeStart: queryStart,
-        createTimeEnd: queryEnd
+        createTimeEnd: addCalendarDays(queryEnd, 1)
       });
       const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
       if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
@@ -777,19 +847,19 @@ async function refreshSalesReport() {
 
     const periodResult = renderPeriodSales(periodOrders, startTime, endTime);
     missingPaymentTimeCount = periodResult.missingPaymentTimeCount;
-    const intervalLabel = `${startTime.toLocaleDateString("pt-BR")} a ${endTime.toLocaleDateString("pt-BR")}`;
+    const intervalLabel = `${formatGmtMinus3Date(startTime)} a ${formatGmtMinus3Date(endTime)}`;
     const omittedLabel = missingPaymentTimeCount
       ? ` ${missingPaymentTimeCount.toLocaleString("pt-BR")} pedido(s) sem horário de pagamento válido foram ignorados.`
       : "";
     setStatus(
       salesStatus,
-      `Atualizado às ${new Date().toLocaleTimeString("pt-BR")}. Últimas 10 vendas sem limite de data; período consultado: ${intervalLabel}.${omittedLabel}`,
+      `Atualizado às ${formatGmtMinus3DateTime(new Date())}. Últimas 10 vendas sem limite de data; período consultado (GMT−3): ${intervalLabel}.${omittedLabel}`,
       missingPaymentTimeCount ? "" : "success"
     );
     lastSalesRefreshAt = new Date();
   } catch (error) {
     const previousDataLabel = lastSalesRefreshAt
-      ? ` Os dados exibidos são da última atualização válida às ${lastSalesRefreshAt.toLocaleTimeString("pt-BR")}.`
+      ? ` Os dados exibidos são da última atualização válida às ${formatGmtMinus3DateTime(lastSalesRefreshAt)}.`
       : "";
     setStatus(salesStatus, `${error.message}${previousDataLabel}`, "error");
   } finally {
