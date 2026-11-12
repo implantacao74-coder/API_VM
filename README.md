@@ -53,7 +53,7 @@ The script authenticates with `credentials.json`, then prompts for the parameter
 
 ## Monitoring page
 
-Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
+Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls plus all client operations documented below for inventory, products, dispensing, cabinet doors, orders, and coupons. The first panel provides a guided product-dispensing form: select a device, load its listed stock channels, select one or more channels, and confirm before sending the physical operation. The response includes the dispensing task ID, which can be used to query its result. API calls go through the local backend to avoid browser CORS restrictions. Stock changes, dispensing, door controls, and coupon generation require an explicit confirmation. The callback integration is inbound server-to-server and is documented separately; it is not an operation the browser can initiate.
 
 Open `monitor-tests.html` or select **Testes** in the monitoring navigation to test product channels and query a test task's result. Testing channels may activate the equipment and requires explicit confirmation.
 

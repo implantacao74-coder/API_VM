@@ -224,6 +224,15 @@ const bodyInput = document.getElementById("bodyInput");
 const runToolBtn = document.getElementById("runToolBtn");
 const toolStatus = document.getElementById("toolStatus");
 const toolOutput = document.getElementById("toolOutput");
+const vendDeviceSelect = document.getElementById("vendDeviceSelect");
+const loadVendChannelsBtn = document.getElementById("loadVendChannelsBtn");
+const selectAllVendChannelsBtn = document.getElementById("selectAllVendChannelsBtn");
+const clearVendChannelsBtn = document.getElementById("clearVendChannelsBtn");
+const vendChannelStatus = document.getElementById("vendChannelStatus");
+const vendChannelList = document.getElementById("vendChannelList");
+const runVendBtn = document.getElementById("runVendBtn");
+const vendStatus = document.getElementById("vendStatus");
+const vendOutput = document.getElementById("vendOutput");
 const deviceRows = document.getElementById("deviceRows");
 const deviceStatus = document.getElementById("deviceStatus");
 const refreshDevicesBtn = document.getElementById("refreshDevicesBtn");
@@ -246,6 +255,8 @@ refreshDevicesBtn.textContent = token ? "Monitorar" : "Autenticar";
 
 let refreshTimer;
 let isRefreshing = false;
+let vendChannelRequestId = 0;
+let isDispensing = false;
 let devicePage = 1;
 const devicePageSize = 50;
 
@@ -419,18 +430,18 @@ function renderResultValue(parent, label, value, toolId, depth = 0) {
   parent.appendChild(section);
 }
 
-function renderToolResult(tool, response, payload, apiPath, succeeded) {
-  toolOutput.replaceChildren();
+function renderToolResult(tool, response, payload, apiPath, succeeded, output = toolOutput) {
+  output.replaceChildren();
   const header = createResultElement("div", "result-header");
   header.append(
     createResultElement("h3", "result-title", tool.label),
     createResultElement("span", `result-status ${succeeded ? "success" : "error"}`, succeeded ? "Concluída" : "Falha")
   );
-  toolOutput.appendChild(header);
+  output.appendChild(header);
 
   const apiMessage = payload && typeof payload === "object" ? payload.msg || payload.message : "";
   const message = succeeded ? "Operação concluída com sucesso." : apiMessage || `A operação falhou (HTTP ${response.status}).`;
-  toolOutput.appendChild(createResultElement("p", `result-message ${succeeded ? "" : "error"}`, message));
+  output.appendChild(createResultElement("p", `result-message ${succeeded ? "" : "error"}`, message));
 
   const metadata = createResultElement("dl", "result-meta");
   for (const [label, value] of [["HTTP", `${response.status} ${response.statusText || ""}`.trim()], ["Código da API", payload?.code ?? "—"]]) {
@@ -438,17 +449,17 @@ function renderToolResult(tool, response, payload, apiPath, succeeded) {
     item.append(createResultElement("dt", "", label), createResultElement("dd", "", String(value)));
     metadata.appendChild(item);
   }
-  toolOutput.appendChild(metadata);
+  output.appendChild(metadata);
 
   const resultData = payload && typeof payload === "object" && Object.hasOwn(payload, "data")
     ? payload.data
     : payload;
-  renderResultValue(toolOutput, "Dados retornados", resultData, tool.id);
+  renderResultValue(output, "Dados retornados", resultData, tool.id);
 
   const rawDetails = createResultElement("details", "result-raw");
   rawDetails.appendChild(createResultElement("summary", "", "Ver resposta original"));
   rawDetails.appendChild(createResultElement("pre", "", JSON.stringify({ path: apiPath, payload }, null, 2)));
-  toolOutput.appendChild(rawDetails);
+  output.appendChild(rawDetails);
 }
 
 function queryString(query) {
@@ -588,6 +599,160 @@ function findInventoryRecords(payload) {
     }
   }
   return [];
+}
+
+function updateVendDeviceOptions(records) {
+  const selectedDeviceId = vendDeviceSelect.value;
+  vendDeviceSelect.replaceChildren(createResultElement("option", "", "Selecione um equipamento"));
+  for (const device of records) {
+    const deviceId = device.id ?? device.deviceUuid;
+    if (deviceId === undefined || deviceId === null || String(deviceId).trim() === "") continue;
+    const state = Number(device.status) === 1 ? "Online" : Number(device.status) === 2 ? "Offline" : "Estado desconhecido";
+    const name = device.deviceName || "Dispositivo sem nome";
+    const option = createResultElement("option", "", `${name} · ${state} · ID ${deviceId}`);
+    option.value = String(deviceId);
+    vendDeviceSelect.appendChild(option);
+  }
+  vendDeviceSelect.disabled = vendDeviceSelect.options.length <= 1;
+  if ([...vendDeviceSelect.options].some((option) => option.value === selectedDeviceId)) {
+    vendDeviceSelect.value = selectedDeviceId;
+  } else if (selectedDeviceId) {
+    vendChannelRequestId += 1;
+    vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Selecione um equipamento e carregue os canais."));
+    setStatus(vendChannelStatus, "A seleção de equipamento mudou. Escolha um equipamento para continuar.");
+  }
+  loadVendChannelsBtn.disabled = !vendDeviceSelect.value;
+  updateVendSelectionState();
+}
+
+function updateVendSelectionState() {
+  const selectableChannels = [...vendChannelList.querySelectorAll('input[type="checkbox"]:not(:disabled)')];
+  const selectedChannels = selectableChannels.filter((checkbox) => checkbox.checked);
+  const hasChannels = selectableChannels.length > 0;
+  selectAllVendChannelsBtn.disabled = !hasChannels || selectedChannels.length === selectableChannels.length;
+  clearVendChannelsBtn.disabled = selectedChannels.length === 0;
+  runVendBtn.disabled = isDispensing || !vendDeviceSelect.value || selectedChannels.length === 0;
+}
+
+function renderVendChannels(records) {
+  vendChannelList.replaceChildren();
+  const listedChannels = records.filter((record) => Number(record.status) === 2);
+  if (listedChannels.length === 0) {
+    vendChannelList.appendChild(createResultElement("p", "dispense-empty", "Nenhum canal listado foi encontrado para este equipamento."));
+    setStatus(vendChannelStatus, "Não há canais disponíveis para dispensação.", "error");
+    updateVendSelectionState();
+    return;
+  }
+
+  for (const record of listedChannels) {
+    const channelId = record.cargoPassageId;
+    const channelNumber = record.cargoPassageNo ?? channelId ?? record.id ?? "Sem identificação";
+    const label = document.createElement("label");
+    label.className = "dispense-channel-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = channelId === undefined || channelId === null ? "" : String(channelId);
+    checkbox.disabled = channelId === undefined || channelId === null || String(channelId).trim() === "";
+    checkbox.addEventListener("change", updateVendSelectionState);
+
+    const details = document.createElement("span");
+    details.className = "dispense-channel-details";
+    details.appendChild(createResultElement("strong", "", record.productName || record.categoryName || `Canal ${channelNumber}`));
+    details.appendChild(createResultElement("span", "", `Canal ${channelNumber} · Estoque: ${formatInventoryCount(record.currentInventoryCount)}`));
+    if (checkbox.disabled) {
+      details.appendChild(createResultElement("span", "dispense-channel-warning", "ID do canal não retornado pela API"));
+    }
+
+    label.append(checkbox, details);
+    vendChannelList.appendChild(label);
+  }
+  const enabledCount = vendChannelList.querySelectorAll('input[type="checkbox"]:not(:disabled)').length;
+  setStatus(
+    vendChannelStatus,
+    enabledCount ? `${enabledCount} canal(is) listado(s). Marque os canais que deseja dispensar.` : "Os canais listados não têm um ID válido para dispensação.",
+    enabledCount ? "" : "error"
+  );
+  updateVendSelectionState();
+}
+
+async function loadVendChannels() {
+  const deviceId = vendDeviceSelect.value;
+  if (!deviceId) {
+    setStatus(vendChannelStatus, "Selecione um equipamento antes de carregar os canais.", "error");
+    return;
+  }
+
+  const requestId = ++vendChannelRequestId;
+  loadVendChannelsBtn.disabled = true;
+  vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Consultando canais do equipamento..."));
+  setStatus(vendChannelStatus, "Consultando canais...");
+  updateVendSelectionState();
+
+  try {
+    const inventoryTool = getTool("inventory");
+    const { response, payload } = await callApi(
+      inventoryTool,
+      { deviceId },
+      inventoryTool.body
+    );
+    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+    if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+      throw new Error(payload?.msg || payload?.message || `Falha ao consultar canais (HTTP ${response.status}).`);
+    }
+    if (requestId !== vendChannelRequestId || deviceId !== vendDeviceSelect.value) return;
+    renderVendChannels(findInventoryRecords(payload));
+  } catch (error) {
+    if (requestId !== vendChannelRequestId) return;
+    vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Não foi possível carregar os canais."));
+    setStatus(vendChannelStatus, error.message, "error");
+    updateVendSelectionState();
+  } finally {
+    if (requestId === vendChannelRequestId) {
+      loadVendChannelsBtn.disabled = !vendDeviceSelect.value;
+    }
+  }
+}
+
+async function runVend() {
+  const selectedChannels = [...vendChannelList.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)')];
+  const cargoPassageIds = selectedChannels.map((checkbox) => checkbox.value);
+  if (!vendDeviceSelect.value || cargoPassageIds.length === 0) {
+    setStatus(vendStatus, "Selecione um equipamento e pelo menos um canal.", "error");
+    return;
+  }
+
+  const deviceLabel = vendDeviceSelect.selectedOptions[0]?.textContent || vendDeviceSelect.value;
+  const channelsLabel = selectedChannels.map((checkbox) =>
+    checkbox.closest(".dispense-channel-option")?.querySelector(".dispense-channel-details strong")?.textContent || checkbox.value
+  ).join(", ");
+  const warning = `Esta ação pode dispensar produtos fisicamente.\n\nEquipamento: ${deviceLabel}\nCanais: ${channelsLabel}\n\nConfirme que o equipamento e os produtos estão corretos.`;
+  if (!window.confirm(warning)) return;
+
+  isDispensing = true;
+  runVendBtn.disabled = true;
+  setStatus(vendStatus, "Enviando solicitação de dispensação...");
+  vendOutput.replaceChildren(createResultElement("p", "result-placeholder", "Enviando solicitação..."));
+  try {
+    const tool = getTool("vend");
+    const { response, payload, apiPath } = await callApi(tool, {}, {
+      deviceId: vendDeviceSelect.value,
+      cargoPassageIds
+    });
+    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+    const succeeded = response.ok && (!Number.isFinite(apiCode) || apiCode === 200);
+    renderToolResult(tool, response, payload, apiPath, succeeded, vendOutput);
+    if (succeeded) {
+      setStatus(vendStatus, "Solicitação enviada. Consulte o resultado usando o ID da tarefa.", "success");
+    } else {
+      setStatus(vendStatus, payload?.msg || payload?.message || `Falha ao solicitar dispensação (HTTP ${response.status}).`, "error");
+    }
+  } catch (error) {
+    vendOutput.replaceChildren(createResultElement("p", "result-message error", `Erro: ${error.message}`));
+    setStatus(vendStatus, error.message, "error");
+  } finally {
+    isDispensing = false;
+    updateVendSelectionState();
+  }
 }
 
 function formatInventoryCount(value) {
@@ -765,6 +930,7 @@ async function refreshDevices() {
     }
     const records = extractRecords(payload);
     renderDevices(records);
+    updateVendDeviceOptions(records);
     previousPageBtn.disabled = devicePage <= 1;
     nextPageBtn.disabled = records.length < devicePageSize;
     devicePageLabel.textContent = `Página ${devicePage}`;
@@ -834,6 +1000,28 @@ async function runTool() {
 
 toolSelect.addEventListener("change", updateToolForm);
 runToolBtn.addEventListener("click", runTool);
+vendDeviceSelect.addEventListener("change", () => {
+  vendChannelRequestId += 1;
+  vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Carregue os canais do equipamento selecionado."));
+  setStatus(vendChannelStatus, "Selecione “Carregar canais” para consultar os produtos.");
+  setStatus(vendStatus, "Aguardando seleção.");
+  loadVendChannelsBtn.disabled = !vendDeviceSelect.value;
+  updateVendSelectionState();
+});
+loadVendChannelsBtn.addEventListener("click", loadVendChannels);
+selectAllVendChannelsBtn.addEventListener("click", () => {
+  vendChannelList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((checkbox) => {
+    checkbox.checked = true;
+  });
+  updateVendSelectionState();
+});
+clearVendChannelsBtn.addEventListener("click", () => {
+  vendChannelList.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+    checkbox.checked = false;
+  });
+  updateVendSelectionState();
+});
+runVendBtn.addEventListener("click", runVend);
 closeInventoryBtn.addEventListener("click", () => inventoryDialog.close());
 inventoryDialog.addEventListener("click", (event) => {
   if (event.target === inventoryDialog) inventoryDialog.close();

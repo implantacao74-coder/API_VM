@@ -30,6 +30,45 @@
       </section>
 
       <div id="monitorContent">
+        <section class="monitor-panel dispense-panel" aria-labelledby="dispenseTitle">
+          <div class="monitor-section-heading">
+            <div>
+              <p class="monitor-eyebrow">AÇÃO FÍSICA</p>
+              <h2 id="dispenseTitle">Dispensar produto</h2>
+              <p>Selecione o equipamento, carregue os canais e marque o(s) produto(s) que deseja dispensar.</p>
+            </div>
+          </div>
+          <div class="dispense-form">
+            <label for="vendDeviceSelect">1. Equipamento</label>
+            <div class="dispense-device-row">
+              <select id="vendDeviceSelect" disabled>
+                <option value="">Carregando dispositivos...</option>
+              </select>
+              <button id="loadVendChannelsBtn" class="secondary" type="button" disabled>Carregar canais</button>
+            </div>
+
+            <div class="dispense-channels-heading">
+              <h3>2. Canais disponíveis</h3>
+              <div class="dispense-channel-actions">
+                <button id="selectAllVendChannelsBtn" class="secondary" type="button" disabled>Selecionar todos</button>
+                <button id="clearVendChannelsBtn" class="secondary" type="button" disabled>Limpar seleção</button>
+              </div>
+            </div>
+            <p id="vendChannelStatus" class="monitor-status" role="status">Selecione um equipamento e carregue os canais.</p>
+            <div id="vendChannelList" class="dispense-channel-list" role="group" aria-label="Canais para dispensação">
+              <p class="dispense-empty">Os canais serão exibidos aqui.</p>
+            </div>
+
+            <div class="dispense-submit-row">
+              <button id="runVendBtn" class="primary" type="button" disabled>Dispensar produto selecionado</button>
+              <span id="vendStatus" class="monitor-status" role="status">Aguardando seleção.</span>
+            </div>
+          </div>
+          <section id="vendOutput" class="monitor-output" aria-live="polite">
+            <p class="result-placeholder">O resultado e o ID da tarefa aparecerão aqui após a solicitação.</p>
+          </section>
+        </section>
+
         <section class="monitor-metrics" aria-label="Resumo dos dispositivos">
           <article class="metric-card">
             <span>Dispositivos nesta página</span>
