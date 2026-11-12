@@ -496,6 +496,12 @@
   overflow-wrap: anywhere;
 }
 
+.sales-order-heading .sales-order-amount {
+  color: var(--acai);
+  font-size: 1em;
+  font-weight: 750;
+}
+
 .sales-order-heading span,
 .sales-order-heading time {
   color: var(--muted);

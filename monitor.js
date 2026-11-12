@@ -193,11 +193,25 @@ const RESULT_FIELD_LABELS = {
   msg: "Mensagem",
   name: "Nome",
   orderNo: "Número do pedido",
+  orderAmount: "Valor da venda",
+  totalAmount: "Valor total",
+  totalMoney: "Valor total",
+  totalPrice: "Valor total",
+  actualAmount: "Valor pago",
   pageNo: "Página",
   pageSize: "Itens por página",
   payStatus: "Estado do pagamento",
   payTime: "Pago em",
   payAmount: "Valor pago",
+  actualAmount: "Valor pago",
+  amount: "Valor da venda",
+  orderAmount: "Valor da venda",
+  price: "Preço unitário",
+  returnMoney: "Valor reembolsado",
+  salePrice: "Preço de venda",
+  totalAmount: "Valor total",
+  totalMoney: "Valor total",
+  totalPrice: "Valor total",
   productName: "Produto",
   quantity: "Quantidade",
   records: "Registros",
@@ -340,6 +354,12 @@ function resultValue(key, value, toolId) {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return value ? "Sim" : "Não";
 
+  if (toolId === "orders" && [
+    "actualAmount", "amount", "orderAmount", "payAmount", "price", "returnMoney",
+    "salePrice", "totalAmount", "totalMoney", "totalPrice"
+  ].includes(key)) {
+    return formatSaleAmount(parseSaleAmount(value));
+  }
   if (["mainOpen", "subOpen"].includes(key) && [0, 1].includes(Number(value))) {
     return Number(value) === 1 ? "Aberta" : "Fechada";
   }
@@ -568,6 +588,60 @@ function getSaleDevice(order) {
     order.deviceUuid || "Máquina não identificada";
 }
 
+function parseSaleAmount(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim().replace(/R\$/gi, "").replace(/\s+/g, "");
+  if (!normalized) return null;
+
+  const brazilianNumber = normalized.match(/^([+-]?)(?:(\d{1,3}(?:\.\d{3})+)|(\d+))(?:,(\d{1,2}))?$/);
+  if (brazilianNumber) {
+    const integerPart = (brazilianNumber[2] || brazilianNumber[3]).replace(/\./g, "");
+    const decimalPart = brazilianNumber[4] || "0";
+    const amount = Number(`${brazilianNumber[1]}${integerPart}.${decimalPart}`);
+    return Number.isFinite(amount) ? amount : null;
+  }
+
+  const decimalDotNumber = normalized.match(/^([+-]?\d+)\.(\d{1,2})$/);
+  if (decimalDotNumber) {
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? amount : null;
+  }
+  return null;
+}
+
+function getSaleAmount(order) {
+  const amountKeys = ["payAmount", "actualAmount", "orderAmount", "totalAmount", "totalMoney", "totalPrice", "amount"];
+  for (const key of amountKeys) {
+    const amount = parseSaleAmount(order[key]);
+    if (amount !== null) {
+      return amount;
+    }
+  }
+
+  if (!Array.isArray(order.orderItemList) || order.orderItemList.length === 0) return null;
+  let total = 0;
+  for (const item of order.orderItemList) {
+    if (!item || typeof item !== "object") return null;
+    const lineAmount = parseSaleAmount(item.totalAmount ?? item.totalPrice ?? item.amount);
+    if (lineAmount !== null) {
+      total += lineAmount;
+      continue;
+    }
+    const price = parseSaleAmount(item.price ?? item.salePrice);
+    const quantity = Number(item.quantity ?? item.count);
+    if (price === null || !Number.isFinite(quantity)) return null;
+    total += price * quantity;
+  }
+  return total;
+}
+
+function formatSaleAmount(amount) {
+  if (amount === null) return "Valor não informado";
+  return `${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}R$`;
+}
+
 function normalizeSales(records) {
   const sales = [];
   let missingPaymentTimeCount = 0;
@@ -596,6 +670,7 @@ function appendSaleCards(parent, sales, emptyMessage) {
     heading.append(
       createResultElement("strong", "", `Pedido ${order.orderNo || order.id || "sem número"}`),
       createResultElement("span", "", getSaleDevice(order)),
+      createResultElement("span", "sales-order-amount", formatSaleAmount(getSaleAmount(order))),
       createResultElement("time", "", payTime.toLocaleString("pt-BR"))
     );
     const status = Number(order.payStatus);
