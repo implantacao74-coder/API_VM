@@ -36,6 +36,10 @@
           <span>Unidades na planilha</span>
           <strong id="catalogUnitCount">—</strong>
         </div>
+        <div class="product-summary-card product-summary-value">
+          <span>Valor estimado com foto</span>
+          <strong id="catalogPhotoEstimatedValue">—</strong>
+        </div>
       </section>
 
       <section class="product-catalog" aria-labelledby="catalogTitle">
@@ -44,6 +48,13 @@
             <h2 id="catalogTitle">Lista de produtos</h2>
             <p>As fotos são relacionadas pelo código no início do nome do arquivo.</p>
           </div>
+          <label class="product-sort-control" for="productSort">Ordenar por
+            <select id="productSort">
+              <option value="price">Preço (maior para menor)</option>
+              <option value="quantity">Quantidade em estoque (maior para menor)</option>
+              <option value="estimatedValue">Valor estimado (maior para menor)</option>
+            </select>
+          </label>
         </div>
         <div class="product-filters">
           <label for="productSearch">Buscar produto

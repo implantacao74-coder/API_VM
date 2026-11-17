@@ -2,11 +2,13 @@
 
 const productSearch = document.getElementById("productSearch");
 const productLocation = document.getElementById("productLocation");
+const productSort = document.getElementById("productSort");
 const productGrid = document.getElementById("productGrid");
 const catalogStatus = document.getElementById("catalogStatus");
 const catalogProductCount = document.getElementById("catalogProductCount");
 const catalogPhotoCount = document.getElementById("catalogPhotoCount");
 const catalogUnitCount = document.getElementById("catalogUnitCount");
+const catalogPhotoEstimatedValue = document.getElementById("catalogPhotoEstimatedValue");
 const downloadNoPhotoReport = document.getElementById("downloadNoPhotoReport");
 const numberFormat = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
 const currencyFormat = new Intl.NumberFormat("pt-BR", {
@@ -159,8 +161,9 @@ function renderProducts() {
     ].map(normalizeText).join(" ");
     return searchable.includes(query);
   });
+  const sortBy = productSort.value;
   filtered.sort((a, b) =>
-    Number(b.price) - Number(a.price) || a.code.localeCompare(b.code, "pt-BR")
+    Number(b[sortBy]) - Number(a[sortBy]) || a.code.localeCompare(b.code, "pt-BR")
   );
 
   productGrid.replaceChildren();
@@ -275,6 +278,10 @@ async function loadProducts() {
     catalogUnitCount.textContent = numberFormat.format(
       products.reduce((sum, product) => sum + (Number(product.quantity) || 0), 0)
     );
+    const photoEstimatedCents = products.reduce((sum, product) =>
+      sum + (product.images.length ? Math.round((Number(product.estimatedValue) || 0) * 100) : 0), 0
+    );
+    catalogPhotoEstimatedValue.textContent = currencyFormat.format(photoEstimatedCents / 100);
     populateLocations();
     downloadNoPhotoReport.disabled = false;
     renderProducts();
@@ -286,5 +293,6 @@ async function loadProducts() {
 
 productSearch.addEventListener("input", renderProducts);
 productLocation.addEventListener("change", renderProducts);
+productSort.addEventListener("change", renderProducts);
 downloadNoPhotoReport.addEventListener("click", downloadMissingPhotoReport);
 loadProducts();
