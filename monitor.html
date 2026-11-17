@@ -30,6 +30,30 @@
       </section>
 
       <div id="monitorContent">
+        <section class="monitor-panel replenishment-panel" aria-labelledby="replenishmentTitle">
+          <div class="monitor-section-heading">
+            <div>
+              <p class="monitor-eyebrow">RELATÓRIO DE ESTOQUE</p>
+              <h2 id="replenishmentTitle">Relatório de reposição</h2>
+              <p>Selecione uma máquina para consultar a quantidade máxima, o estoque atual por mola/canaleta e quanto falta para completar cada canal.</p>
+            </div>
+          </div>
+          <div class="replenishment-select-row">
+            <label for="replenishmentDeviceSelect">Máquina (nome / ID)
+              <select id="replenishmentDeviceSelect" disabled>
+                <option value="">Carregando dispositivos...</option>
+              </select>
+            </label>
+            <button id="refreshReplenishmentBtn" class="secondary" type="button" disabled>Atualizar relatório</button>
+            <button id="printReplenishmentBtn" class="secondary" type="button" disabled>Imprimir / salvar PDF</button>
+          </div>
+          <p id="replenishmentStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <dl id="replenishmentMachineDetails" class="replenishment-machine-details" hidden></dl>
+          <div id="replenishmentReport" class="result-table-wrap" aria-live="polite">
+            <p class="result-placeholder">Selecione uma máquina para gerar o relatório.</p>
+          </div>
+        </section>
+
         <section class="monitor-panel dispense-panel" aria-labelledby="dispenseTitle">
           <div class="monitor-section-heading">
             <div>
@@ -216,6 +240,48 @@
           alteram dados ou acionam equipamentos; revise os parâmetros antes de confirmar.
           O callback de pedidos é uma integração recebida pelo seu servidor, não uma chamada iniciada por esta página.
         </aside>
+
+        <section class="monitor-panel abc-panel" aria-labelledby="abcTitle">
+          <div class="monitor-section-heading">
+            <div>
+              <p class="monitor-eyebrow">ANÁLISE DE VENDAS</p>
+              <h2 id="abcTitle">Curva ABC de vendas · últimos 30 dias</h2>
+              <p>Classificação por faturamento dos produtos em pedidos com pagamento concluído. A: aproximadamente 80% do faturamento acumulado; B: até 95%; C: restante.</p>
+            </div>
+            <button id="refreshAbcBtn" class="secondary sales-refresh" type="button">Atualizar curva ABC</button>
+          </div>
+          <p id="abcStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <div class="sales-summary abc-summary" aria-label="Resumo da curva ABC">
+            <article class="sales-summary-card">
+              <span>Pedidos pagos analisados</span>
+              <strong id="abcOrderCount">—</strong>
+            </article>
+            <article class="sales-summary-card">
+              <span>Faturamento no período</span>
+              <strong id="abcRevenueTotal">—</strong>
+            </article>
+            <article class="sales-summary-card">
+              <span>Produtos analisados</span>
+              <strong id="abcProductCount">—</strong>
+            </article>
+          </div>
+          <div id="abcReport" class="result-table-wrap" aria-live="polite">
+            <p class="result-placeholder">A curva ABC aparecerá aqui após a consulta.</p>
+          </div>
+          <section class="abc-chart-section" aria-labelledby="abcChartTitle">
+            <h3 id="abcChartTitle">Gráfico da curva ABC</h3>
+            <p class="abc-chart-description">Barras mostram o faturamento por produto; a linha mostra o percentual acumulado. Passe o cursor sobre uma barra para ver os detalhes.</p>
+            <div class="abc-chart-legend" aria-label="Legenda do gráfico">
+              <span><i class="abc-legend-a"></i>Classe A</span>
+              <span><i class="abc-legend-b"></i>Classe B</span>
+              <span><i class="abc-legend-c"></i>Classe C</span>
+              <span><i class="abc-legend-line"></i>Faturamento acumulado</span>
+            </div>
+            <div id="abcChart" class="abc-chart-wrap" role="group" aria-label="Gráfico de Pareto da curva ABC">
+              <p class="result-placeholder">O gráfico será exibido após a consulta.</p>
+            </div>
+          </section>
+        </section>
       </div>
 
       <dialog id="inventoryDialog" class="inventory-dialog" aria-labelledby="inventoryTitle">

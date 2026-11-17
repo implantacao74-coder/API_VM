@@ -241,6 +241,12 @@ const bodyInput = document.getElementById("bodyInput");
 const runToolBtn = document.getElementById("runToolBtn");
 const toolStatus = document.getElementById("toolStatus");
 const toolOutput = document.getElementById("toolOutput");
+const replenishmentDeviceSelect = document.getElementById("replenishmentDeviceSelect");
+const refreshReplenishmentBtn = document.getElementById("refreshReplenishmentBtn");
+const printReplenishmentBtn = document.getElementById("printReplenishmentBtn");
+const replenishmentStatus = document.getElementById("replenishmentStatus");
+const replenishmentMachineDetails = document.getElementById("replenishmentMachineDetails");
+const replenishmentReport = document.getElementById("replenishmentReport");
 const vendDeviceSelect = document.getElementById("vendDeviceSelect");
 const loadVendChannelsBtn = document.getElementById("loadVendChannelsBtn");
 const selectAllVendChannelsBtn = document.getElementById("selectAllVendChannelsBtn");
@@ -261,6 +267,13 @@ const salesRefunded = document.getElementById("salesRefunded");
 const salesDevices = document.getElementById("salesDevices");
 const latestSalesList = document.getElementById("latestSalesList");
 const periodSalesList = document.getElementById("periodSalesList");
+const refreshAbcBtn = document.getElementById("refreshAbcBtn");
+const abcStatus = document.getElementById("abcStatus");
+const abcOrderCount = document.getElementById("abcOrderCount");
+const abcRevenueTotal = document.getElementById("abcRevenueTotal");
+const abcProductCount = document.getElementById("abcProductCount");
+const abcReport = document.getElementById("abcReport");
+const abcChart = document.getElementById("abcChart");
 const deviceRows = document.getElementById("deviceRows");
 const deviceStatus = document.getElementById("deviceStatus");
 const refreshDevicesBtn = document.getElementById("refreshDevicesBtn");
@@ -283,11 +296,17 @@ refreshDevicesBtn.textContent = token ? "Monitorar" : "Autenticar";
 
 let refreshTimer;
 let isRefreshing = false;
+let replenishmentRequestId = 0;
+let replenishmentDeviceRecords = [];
+let hasReplenishmentReport = false;
+let replenishmentGeneratedAt = "";
 let vendChannelRequestId = 0;
 let isDispensing = false;
 let isLoadingSales = false;
 let salesRefreshTimer;
+let abcRefreshTimer;
 let lastSalesRefreshAt;
+let isLoadingAbc = false;
 let devicePage = 1;
 const devicePageSize = 50;
 const SALES_TIME_ZONE = "Etc/GMT+3";
@@ -683,30 +702,95 @@ function parseSaleAmount(value) {
   return null;
 }
 
+const SALE_AMOUNT_KEYS = [
+  "actualAmount", "payAmount", "orderAmount", "totalAmount",
+  "totalMoney", "totalPrice", "amount", "price", "salePrice"
+];
+
+function isAmountInMinorUnits(amount, majorAmount) {
+  return Number.isInteger(amount) && amount > 0 &&
+    Math.abs(amount / 100 - Math.round(majorAmount * 100) / 100) < 0.005;
+}
+
+function getSaleItemAmount(item, quantityOverride) {
+  if (!item || typeof item !== "object") return null;
+  const lineAmount = parseSaleAmount(
+    item.totalAmount ?? item.totalPrice ?? item.amount ?? item.payAmount ?? item.actualAmount
+  );
+  let unitPrice = parseSaleAmount(item.price ?? item.salePrice ?? item.unitPrice);
+  const costPrice = parseSaleAmount(item.costPrice);
+  if (unitPrice !== null && costPrice !== null && costPrice > 0 &&
+      unitPrice / costPrice >= 100 && unitPrice / 100 >= costPrice) {
+    unitPrice /= 100;
+  }
+  const quantityValue = item.quantity ?? item.count ?? quantityOverride;
+  const quantity = quantityValue === null || quantityValue === undefined || quantityValue === ""
+    ? null
+    : Number(quantityValue);
+  const hasCalculatedAmount = unitPrice !== null && Number.isFinite(quantity) && quantity >= 0;
+  const calculatedAmount = hasCalculatedAmount ? unitPrice * quantity : null;
+
+  if (lineAmount !== null) {
+    return calculatedAmount !== null && isAmountInMinorUnits(lineAmount, calculatedAmount)
+      ? calculatedAmount
+      : lineAmount;
+  }
+  return calculatedAmount;
+}
+
+function getSaleItemsAmount(order) {
+  if (!Array.isArray(order.orderItemList) || order.orderItemList.length === 0) return null;
+  let total = 0;
+  for (const item of order.orderItemList) {
+    const amount = getSaleItemAmount(item);
+    if (amount === null) return null;
+    total += amount;
+  }
+  return total;
+}
+
 function getSaleAmount(order) {
-  const amountKeys = ["payAmount", "actualAmount", "orderAmount", "totalAmount", "totalMoney", "totalPrice", "amount"];
-  for (const key of amountKeys) {
+  const itemsAmount = getSaleItemsAmount(order);
+  const amounts = SALE_AMOUNT_KEYS
+    .map((key) => parseSaleAmount(order[key]))
+    .filter((amount) => amount !== null);
+
+  for (const amount of amounts) {
+    if (itemsAmount !== null && isAmountInMinorUnits(amount, itemsAmount)) {
+      return amount / 100;
+    }
+    for (const otherAmount of amounts) {
+      if (isAmountInMinorUnits(amount, otherAmount)) {
+        return otherAmount;
+      }
+    }
+  }
+
+  for (const key of SALE_AMOUNT_KEYS) {
     const amount = parseSaleAmount(order[key]);
     if (amount !== null) {
       return amount;
     }
   }
 
-  if (!Array.isArray(order.orderItemList) || order.orderItemList.length === 0) return null;
-  let total = 0;
-  for (const item of order.orderItemList) {
-    if (!item || typeof item !== "object") return null;
-    const lineAmount = parseSaleAmount(item.totalAmount ?? item.totalPrice ?? item.amount);
-    if (lineAmount !== null) {
-      total += lineAmount;
-      continue;
+  return itemsAmount;
+}
+
+function normalizeSaleAmountFields(record, referenceAmount) {
+  if (!record || typeof record !== "object" || referenceAmount === null) return record;
+  const normalized = { ...record };
+  for (const key of SALE_AMOUNT_KEYS) {
+    const amount = parseSaleAmount(record[key]);
+    if (amount !== null && isAmountInMinorUnits(amount, referenceAmount)) {
+      normalized[key] = amount / 100;
     }
-    const price = parseSaleAmount(item.price ?? item.salePrice);
-    const quantity = Number(item.quantity ?? item.count);
-    if (price === null || !Number.isFinite(quantity)) return null;
-    total += price * quantity;
   }
-  return total;
+  if (Array.isArray(record.orderItemList)) {
+    normalized.orderItemList = record.orderItemList.map((item) =>
+      normalizeSaleAmountFields(item, getSaleItemAmount(item))
+    );
+  }
+  return normalized;
 }
 
 function formatSaleAmount(amount) {
@@ -751,7 +835,13 @@ function appendSaleCards(parent, sales, emptyMessage) {
     card.appendChild(summary);
 
     const details = createResultElement("div", "sales-order-details");
-    renderResultValue(details, "Detalhes da venda", order, "orders");
+    const amount = getSaleItemsAmount(order);
+    renderResultValue(
+      details,
+      "Detalhes da venda",
+      normalizeSaleAmountFields(order, amount),
+      "orders"
+    );
     card.appendChild(details);
     parent.appendChild(card);
   }
@@ -776,6 +866,329 @@ function renderPeriodSales(records, startTime, endTime) {
   salesDevices.textContent = new Set(sales.map(({ order }) => getSaleDevice(order))).size.toLocaleString("pt-BR");
   appendSaleCards(periodSalesList, sales, "Nenhuma venda encontrada no período selecionado.");
   return { count: sales.length, missingPaymentTimeCount };
+}
+
+function getAbcItemQuantity(item) {
+  const value = item.quantity ?? item.count ?? item.productCount ?? item.productNum ?? item.buyCount;
+  if (value === null || value === undefined || value === "") return null;
+  const quantity = Number(value);
+  return Number.isFinite(quantity) && quantity >= 0 ? quantity : null;
+}
+
+function getAbcItemRevenue(item, quantity) {
+  return getSaleItemAmount(item, quantity);
+}
+
+function aggregateAbcProducts(orders, startTime, endTime) {
+  const products = new Map();
+  let paidOrderCount = 0;
+  let skippedItemCount = 0;
+  let skippedOrderCount = 0;
+
+  for (const order of orders) {
+    const payTime = parseSaleDateTime(order.payTime);
+    if (!payTime || payTime < startTime || payTime > endTime || Number(order.payStatus) !== 2) continue;
+
+    paidOrderCount += 1;
+    if (!Array.isArray(order.orderItemList) || order.orderItemList.length === 0) {
+      skippedOrderCount += 1;
+      continue;
+    }
+
+    for (const item of order.orderItemList) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        skippedItemCount += 1;
+        continue;
+      }
+
+      const nestedProduct = item.product && typeof item.product === "object" ? item.product : {};
+      const productId = item.productId ?? item.goodsId ?? nestedProduct.id;
+      const productName = item.productName || item.goodsName || nestedProduct.name || item.name || item.title;
+      if ((productId === undefined || productId === null || String(productId).trim() === "") &&
+          (typeof productName !== "string" || !productName.trim())) {
+        skippedItemCount += 1;
+        continue;
+      }
+
+      const quantity = getAbcItemQuantity(item);
+      const revenue = getAbcItemRevenue(item, quantity);
+      if (revenue === null || revenue < 0) {
+        skippedItemCount += 1;
+        continue;
+      }
+
+      const identity = productId !== undefined && productId !== null && String(productId).trim() !== ""
+        ? `id:${productId}`
+        : `name:${productName.trim().toLocaleLowerCase()}`;
+      const product = products.get(identity) || {
+        name: typeof productName === "string" && productName.trim()
+          ? productName.trim()
+          : `Produto ${productId}`,
+        quantity: 0,
+        quantityComplete: true,
+        revenue: 0
+      };
+      if (quantity === null) {
+        product.quantityComplete = false;
+      } else {
+        product.quantity += quantity;
+      }
+      product.revenue += revenue;
+      products.set(identity, product);
+    }
+  }
+
+  const sortedProducts = [...products.values()].sort((left, right) =>
+    right.revenue - left.revenue || left.name.localeCompare(right.name, "pt-BR")
+  );
+  const totalRevenue = sortedProducts.reduce((total, product) => total + product.revenue, 0);
+  let cumulativeRevenue = 0;
+  for (const product of sortedProducts) {
+    const previousShare = totalRevenue > 0 ? cumulativeRevenue / totalRevenue : 1;
+    cumulativeRevenue += product.revenue;
+    product.share = totalRevenue > 0 ? product.revenue / totalRevenue : 0;
+    product.cumulativeShare = totalRevenue > 0 ? cumulativeRevenue / totalRevenue : 0;
+    product.category = previousShare < 0.8 ? "A" : previousShare < 0.95 ? "B" : "C";
+  }
+
+  return { products: sortedProducts, totalRevenue, paidOrderCount, skippedItemCount, skippedOrderCount };
+}
+
+function renderAbcReport(summary) {
+  abcOrderCount.textContent = summary.paidOrderCount.toLocaleString("pt-BR");
+  abcRevenueTotal.textContent = formatSaleAmount(summary.totalRevenue);
+  abcProductCount.textContent = summary.products.length.toLocaleString("pt-BR");
+  abcReport.replaceChildren();
+
+  if (summary.products.length === 0) {
+    abcReport.appendChild(
+      createResultElement("p", "result-empty", "Nenhum item de produto foi encontrado em pedidos pagos no período.")
+    );
+    abcChart.replaceChildren(
+      createResultElement("p", "result-empty", "Sem dados suficientes para gerar o gráfico.")
+    );
+    return;
+  }
+
+  const table = createResultElement("table", "result-table abc-table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["Produto", "Quantidade vendida", "Faturamento", "% do faturamento", "% acumulado", "Classe"]) {
+    headerRow.appendChild(createResultElement("th", "", label));
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  for (const product of summary.products) {
+    const row = document.createElement("tr");
+    const values = [
+      product.name,
+      product.quantityComplete ? product.quantity.toLocaleString("pt-BR") : "—",
+      formatSaleAmount(product.revenue),
+      `${(product.share * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`,
+      `${(product.cumulativeShare * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`,
+      product.category
+    ];
+    for (const value of values) {
+      row.appendChild(createResultElement("td", "", value));
+    }
+    row.lastElementChild.className = `abc-class abc-class-${product.category.toLowerCase()}`;
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  abcReport.appendChild(table);
+  renderAbcChart(summary.products);
+}
+
+function renderAbcChart(products) {
+  const namespace = "http://www.w3.org/2000/svg";
+  const chartHeight = 360;
+  const margins = { top: 24, right: 58, bottom: 62, left: 62 };
+  const chartWidth = Math.max(900, products.length * 18 + margins.left + margins.right);
+  const plotWidth = chartWidth - margins.left - margins.right;
+  const plotHeight = chartHeight - margins.top - margins.bottom;
+  const plotBottom = margins.top + plotHeight;
+  const maxRevenue = products.reduce((maximum, product) => Math.max(maximum, product.revenue), 0);
+  const svg = document.createElementNS(namespace, "svg");
+  svg.classList.add("abc-chart");
+  svg.setAttribute("viewBox", `0 0 ${chartWidth} ${chartHeight}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Curva ABC de ${products.length} produtos, ordenados por faturamento`);
+  svg.style.width = `${chartWidth}px`;
+
+  const addElement = (tag, attributes, text) => {
+    const element = document.createElementNS(namespace, tag);
+    for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, String(value));
+    if (text !== undefined) element.textContent = text;
+    svg.appendChild(element);
+    return element;
+  };
+  const yForShare = (share) => margins.top + plotHeight * (1 - share);
+
+  for (const share of [0, 0.5, 1]) {
+    const y = yForShare(share);
+    addElement("line", {
+      x1: margins.left,
+      x2: margins.left + plotWidth,
+      y1: y,
+      y2: y,
+      class: "abc-chart-grid"
+    });
+    addElement("text", {
+      x: margins.left - 10,
+      y: y + 4,
+      "text-anchor": "end",
+      class: "abc-chart-axis-label"
+    }, `${Math.round(share * 100)}%`);
+  }
+
+  const step = plotWidth / products.length;
+  const points = [];
+  products.forEach((product, index) => {
+    const x = margins.left + step * index + step / 2;
+    const barHeight = maxRevenue > 0 ? (product.revenue / maxRevenue) * plotHeight : 0;
+    const barWidth = Math.max(1, step * 0.68);
+    const bar = addElement("rect", {
+      x: x - barWidth / 2,
+      y: plotBottom - barHeight,
+      width: barWidth,
+      height: barHeight,
+      class: `abc-chart-bar abc-chart-bar-${product.category.toLowerCase()}`
+    });
+    const tooltip = document.createElementNS(namespace, "title");
+    tooltip.textContent = `${product.name} · ${formatSaleAmount(product.revenue)} · ${(product.cumulativeShare * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% acumulado · Classe ${product.category}`;
+    bar.appendChild(tooltip);
+    points.push(`${x},${yForShare(product.cumulativeShare)}`);
+  });
+
+  addElement("polyline", {
+    points: points.join(" "),
+    class: "abc-chart-cumulative"
+  });
+
+  for (const share of [0.8, 0.95]) {
+    const y = yForShare(share);
+    addElement("line", {
+      x1: margins.left,
+      x2: margins.left + plotWidth,
+      y1: y,
+      y2: y,
+      class: "abc-chart-threshold"
+    });
+    addElement("text", {
+      x: margins.left + plotWidth + 10,
+      y: y + 4,
+      "text-anchor": "start",
+      class: "abc-chart-axis-label"
+    }, `${Math.round(share * 100)}%`);
+  }
+
+  for (const share of [0, 0.5, 1]) {
+    addElement("text", {
+      x: margins.left + plotWidth + 10,
+      y: yForShare(share) + 4,
+      "text-anchor": "start",
+      class: "abc-chart-axis-label"
+    }, `${Math.round(share * 100)}%`);
+  }
+
+  addElement("text", {
+    x: chartWidth - 8,
+    y: margins.top - 10,
+    "text-anchor": "end",
+    class: "abc-chart-axis-title"
+  }, "Acumulado");
+  addElement("text", {
+    x: 14,
+    y: margins.top + plotHeight / 2,
+    "text-anchor": "middle",
+    class: "abc-chart-axis-title",
+    transform: `rotate(-90 14 ${margins.top + plotHeight / 2})`
+  }, "Faturamento (% do produto líder)");
+
+  const rankLabels = [...new Set([1, Math.ceil(products.length / 2), products.length])];
+  for (const rank of rankLabels) {
+    const x = margins.left + step * (rank - 0.5);
+    addElement("text", {
+      x,
+      y: plotBottom + 20,
+      "text-anchor": "middle",
+      class: "abc-chart-axis-label"
+    }, String(rank));
+  }
+  addElement("text", {
+    x: margins.left + plotWidth / 2,
+    y: chartHeight - 8,
+    "text-anchor": "middle",
+    class: "abc-chart-axis-title"
+  }, "Produtos em ordem decrescente de faturamento (posição no ranking)");
+
+  abcChart.replaceChildren(svg);
+}
+
+async function refreshAbcReport() {
+  if (isLoadingAbc) return;
+  isLoadingAbc = true;
+  refreshAbcBtn.disabled = true;
+  abcReport.replaceChildren(createResultElement("p", "result-placeholder", "Consultando vendas dos últimos 30 dias..."));
+  setStatus(abcStatus, "Consultando pedidos pagos para montar a curva ABC...");
+
+  const endTime = new Date();
+  const startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const queryStart = formatGmtMinus3Date(startTime);
+  const queryEnd = formatGmtMinus3Date(endTime);
+  const pageSize = 200;
+  const orders = [];
+
+  try {
+    const tool = getTool("orders");
+    for (let pageNo = 1; ; pageNo += 1) {
+      setStatus(abcStatus, pageNo === 1
+        ? "Consultando pedidos dos últimos 30 dias..."
+        : `Consultando página ${pageNo} de pedidos...`);
+      const { response, payload } = await callApi(tool, {
+        pageNo,
+        pageSize
+      }, {
+        createTimeStart: queryStart,
+        createTimeEnd: addCalendarDays(queryEnd, 1)
+      });
+      const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+      if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+        throw new Error(payload?.msg || payload?.message || `Falha ao consultar pedidos (HTTP ${response.status}, página ${pageNo}).`);
+      }
+
+      const records = extractRecords(payload);
+      orders.push(...records);
+      const totalCount = findOrderTotalCount(payload);
+      if (records.length === 0 ||
+        (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
+        (totalCount === undefined && records.length < pageSize)) {
+        break;
+      }
+      if (pageNo >= 1000) {
+        throw new Error("A consulta da curva ABC ultrapassou 1.000 páginas.");
+      }
+    }
+
+    const summary = aggregateAbcProducts(orders, startTime, endTime);
+    renderAbcReport(summary);
+    const skippedLabel = summary.skippedItemCount || summary.skippedOrderCount
+      ? ` ${summary.skippedItemCount.toLocaleString("pt-BR")} item(ns) e ${summary.skippedOrderCount.toLocaleString("pt-BR")} pedido(s) sem detalhes suficientes foram desconsiderados.`
+      : "";
+    setStatus(
+      abcStatus,
+      `Período: ${formatGmtMinus3Date(startTime)} a ${formatGmtMinus3Date(endTime)} (GMT−3). Classificação por faturamento; os itens que cruzam cada limite permanecem na classe que completa a faixa.${skippedLabel}`,
+      "success"
+    );
+  } catch (error) {
+    abcReport.replaceChildren(createResultElement("p", "result-message error", `Não foi possível gerar a curva ABC: ${error.message}`));
+    setStatus(abcStatus, error.message, "error");
+  } finally {
+    isLoadingAbc = false;
+    refreshAbcBtn.disabled = false;
+  }
 }
 
 async function refreshSalesReport() {
@@ -975,6 +1388,76 @@ function updateVendDeviceOptions(records) {
   updateVendSelectionState();
 }
 
+function updateReplenishmentDeviceOptions(records) {
+  replenishmentDeviceRecords = records;
+  const selectedDeviceId = replenishmentDeviceSelect.value;
+  replenishmentDeviceSelect.replaceChildren(createResultElement("option", "", "Selecione uma máquina"));
+  for (const device of records) {
+    const deviceId = device.id ?? device.deviceUuid;
+    if (deviceId === undefined || deviceId === null || String(deviceId).trim() === "") continue;
+    const name = device.deviceName || "Máquina sem nome";
+    const option = createResultElement("option", "", `${name} · ID ${deviceId}`);
+    option.value = String(deviceId);
+    replenishmentDeviceSelect.appendChild(option);
+  }
+  replenishmentDeviceSelect.disabled = replenishmentDeviceSelect.options.length <= 1;
+  if ([...replenishmentDeviceSelect.options].some((option) => option.value === selectedDeviceId)) {
+    replenishmentDeviceSelect.value = selectedDeviceId;
+    renderReplenishmentMachineDetails(getSelectedReplenishmentDevice(), replenishmentGeneratedAt);
+  } else {
+    replenishmentDeviceSelect.value = "";
+    replenishmentRequestId += 1;
+    hasReplenishmentReport = false;
+    replenishmentGeneratedAt = "";
+    printReplenishmentBtn.disabled = true;
+    replenishmentMachineDetails.replaceChildren();
+    replenishmentMachineDetails.hidden = true;
+    replenishmentReport.replaceChildren(
+      createResultElement("p", "result-placeholder", "Selecione uma máquina para gerar o relatório.")
+    );
+    setStatus(replenishmentStatus, "Selecione uma máquina para consultar as reposições.");
+  }
+  refreshReplenishmentBtn.disabled = !replenishmentDeviceSelect.value;
+}
+
+function getSelectedReplenishmentDevice() {
+  return replenishmentDeviceRecords.find((device) =>
+    String(device.id ?? device.deviceUuid ?? "") === replenishmentDeviceSelect.value
+  );
+}
+
+function renderReplenishmentMachineDetails(device, generatedAt) {
+  replenishmentMachineDetails.replaceChildren();
+  if (!device) {
+    replenishmentMachineDetails.hidden = true;
+    return;
+  }
+
+  const status = Number(device.status) === 1
+    ? "Online"
+    : Number(device.status) === 2
+      ? "Offline"
+      : device.status ?? "Desconhecido";
+  const fields = [
+    ["Máquina", device.deviceName || "Máquina sem nome"],
+    ["ID", device.id ?? device.deviceUuid ?? "—"],
+    ...(device.deviceUuid && String(device.deviceUuid) !== String(device.id ?? device.deviceUuid)
+      ? [["UUID", device.deviceUuid]]
+      : []),
+    ["Estado", status],
+    ...(device.deviceVersion ? [["Versão", device.deviceVersion]] : []),
+    ...(generatedAt ? [["Consulta realizada em", generatedAt]] : [])
+  ];
+
+  for (const [label, value] of fields) {
+    replenishmentMachineDetails.append(
+      createResultElement("dt", "", label),
+      createResultElement("dd", "", String(value))
+    );
+  }
+  replenishmentMachineDetails.hidden = false;
+}
+
 function updateVendSelectionState() {
   const selectableChannels = [...vendChannelList.querySelectorAll('input[type="checkbox"]:not(:disabled)')];
   const selectedChannels = selectableChannels.filter((checkbox) => checkbox.checked);
@@ -1108,6 +1591,136 @@ async function runVend() {
 function formatInventoryCount(value) {
   const count = Number(value);
   return Number.isFinite(count) ? count.toLocaleString() : "—";
+}
+
+function getInventoryCount(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const count = Number(value);
+  return Number.isFinite(count) ? count : null;
+}
+
+function renderReplenishmentReport(records) {
+  replenishmentReport.replaceChildren();
+  const table = createResultElement("table", "result-table replenishment-table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const heading of [
+    "Mola / canaleta",
+    "Produto",
+    "Quantidade Máxima",
+    "Quantidade na máquina",
+    "Quantidade necessária para reposição"
+  ]) {
+    headerRow.appendChild(createResultElement("th", "", heading));
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  if (records.length === 0) {
+    const row = document.createElement("tr");
+    const cell = createResultElement("td", "result-empty", "A API não retornou canais de estoque para esta máquina.");
+    cell.colSpan = 5;
+    row.appendChild(cell);
+    body.appendChild(row);
+  }
+
+  for (const record of records) {
+    const maximum = getInventoryCount(record.capacity ?? record.totalInventoryCount);
+    const current = getInventoryCount(record.currentInventoryCount);
+    const replenishment = maximum !== null && current !== null
+      ? Math.max(0, maximum - current)
+      : null;
+    const channel = record.cargoPassageNo ?? record.cargoPassageId ?? record.id ?? "—";
+    const values = [
+      channel,
+      record.productName || record.categoryName || "—",
+      maximum === null ? "—" : maximum.toLocaleString("pt-BR"),
+      current === null ? "—" : current.toLocaleString("pt-BR"),
+      replenishment === null ? "—" : replenishment.toLocaleString("pt-BR")
+    ];
+    const row = document.createElement("tr");
+    for (const value of values) {
+      row.appendChild(createResultElement("td", "", String(value)));
+    }
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  replenishmentReport.appendChild(table);
+}
+
+async function loadReplenishmentReport() {
+  const deviceId = replenishmentDeviceSelect.value;
+  if (!deviceId) {
+    setStatus(replenishmentStatus, "Selecione uma máquina para consultar as reposições.", "error");
+    return;
+  }
+
+  const requestId = ++replenishmentRequestId;
+  hasReplenishmentReport = false;
+  replenishmentGeneratedAt = "";
+  printReplenishmentBtn.disabled = true;
+  renderReplenishmentMachineDetails(getSelectedReplenishmentDevice());
+  refreshReplenishmentBtn.disabled = true;
+  replenishmentReport.replaceChildren(
+    createResultElement("p", "result-placeholder", "Consultando estoque da máquina...")
+  );
+  setStatus(replenishmentStatus, "Consultando canais e quantidades...");
+
+  try {
+    const inventoryTool = getTool("inventory");
+    const { response, payload } = await callApi(inventoryTool, { deviceId }, inventoryTool.body);
+    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+    if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+      throw new Error(payload?.msg || payload?.message || `Falha ao consultar estoque (HTTP ${response.status}).`);
+    }
+    if (requestId !== replenishmentRequestId || deviceId !== replenishmentDeviceSelect.value) return;
+
+    const records = findInventoryRecords(payload);
+    renderReplenishmentReport(records);
+    replenishmentGeneratedAt = new Date().toLocaleString("pt-BR");
+    renderReplenishmentMachineDetails(getSelectedReplenishmentDevice(), replenishmentGeneratedAt);
+    hasReplenishmentReport = records.length > 0;
+    printReplenishmentBtn.disabled = !hasReplenishmentReport;
+    setStatus(
+      replenishmentStatus,
+      records.length
+        ? `Relatório atualizado às ${new Date().toLocaleTimeString()}. A reposição é calculada como quantidade máxima menos estoque atual, limitada a zero.`
+        : "Nenhum canal de estoque foi retornado para esta máquina.",
+      "success"
+    );
+  } catch (error) {
+    if (requestId !== replenishmentRequestId) return;
+    hasReplenishmentReport = false;
+    replenishmentGeneratedAt = "";
+    printReplenishmentBtn.disabled = true;
+    renderReplenishmentMachineDetails(getSelectedReplenishmentDevice());
+    replenishmentReport.replaceChildren(
+      createResultElement("p", "result-message error", `Não foi possível gerar o relatório: ${error.message}`)
+    );
+    setStatus(replenishmentStatus, error.message, "error");
+  } finally {
+    if (requestId === replenishmentRequestId) {
+      refreshReplenishmentBtn.disabled = !replenishmentDeviceSelect.value;
+    }
+  }
+}
+
+function handleReplenishmentDeviceChange() {
+  hasReplenishmentReport = false;
+  replenishmentGeneratedAt = "";
+  printReplenishmentBtn.disabled = true;
+  refreshReplenishmentBtn.disabled = !replenishmentDeviceSelect.value;
+  renderReplenishmentMachineDetails(getSelectedReplenishmentDevice());
+  if (!replenishmentDeviceSelect.value) {
+    replenishmentRequestId += 1;
+    replenishmentReport.replaceChildren(
+      createResultElement("p", "result-placeholder", "Selecione uma máquina para gerar o relatório.")
+    );
+    setStatus(replenishmentStatus, "Selecione uma máquina para consultar as reposições.");
+    return;
+  }
+  loadReplenishmentReport();
 }
 
 function renderInventory(records) {
@@ -1281,6 +1894,7 @@ async function refreshDevices() {
     const records = extractRecords(payload);
     renderDevices(records);
     updateVendDeviceOptions(records);
+    updateReplenishmentDeviceOptions(records);
     previousPageBtn.disabled = devicePage <= 1;
     nextPageBtn.disabled = records.length < devicePageSize;
     devicePageLabel.textContent = `Página ${devicePage}`;
@@ -1349,9 +1963,15 @@ async function runTool() {
 }
 
 toolSelect.addEventListener("change", updateToolForm);
+replenishmentDeviceSelect.addEventListener("change", handleReplenishmentDeviceChange);
+refreshReplenishmentBtn.addEventListener("click", loadReplenishmentReport);
+printReplenishmentBtn.addEventListener("click", () => {
+  if (hasReplenishmentReport) window.print();
+});
 runToolBtn.addEventListener("click", runTool);
 refreshSalesBtn.addEventListener("click", refreshSalesReport);
 applySalesPeriodBtn.addEventListener("click", refreshSalesReport);
+refreshAbcBtn.addEventListener("click", refreshAbcReport);
 vendDeviceSelect.addEventListener("change", () => {
   vendChannelRequestId += 1;
   vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Carregue os canais do equipamento selecionado."));
@@ -1410,5 +2030,7 @@ if (!token) {
 } else {
   refreshDevices();
   refreshSalesReport();
+  refreshAbcReport();
   salesRefreshTimer = window.setInterval(refreshSalesReport, 5 * 60 * 1000);
+  abcRefreshTimer = window.setInterval(refreshAbcReport, 5 * 60 * 1000);
 }

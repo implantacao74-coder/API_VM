@@ -112,6 +112,10 @@ API requests from this script are sent directly to `https://veda.figeth.com`.
 
 Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls, inventory, products, dispensing, cabinet doors, orders, and coupons.
 
+### Replenishment report
+
+At the top of the monitoring page, select a machine to generate a per-channel replenishment report. It shows the machine details, maximum quantity (`capacity`, falling back to `totalInventoryCount`), current quantity, and number needed to refill each channel. The needed quantity is `max(0, maximum - current)`; missing quantities are displayed as unavailable. Use **Atualizar relatório** to query the selected machine again. **Imprimir / salvar PDF** opens the browser's print dialog; choose **Save as PDF** (or the equivalent option in your browser) to create the PDF. The print layout contains only the report and its machine details.
+
 ### Product dispensing
 
 The first panel guides the physical dispensing operation:
@@ -132,6 +136,10 @@ The report shows the 10 most recent orders without a date filter and a separate,
 - Select **Atualizar agora** to refresh both sections immediately.
 - Timestamps without an explicit time zone are interpreted as China Standard Time (UTC+8) and displayed in fixed GMT-3. Timestamps with an explicit offset are converted from that offset.
 - Orders without a valid payment time are omitted from period results and reported in the status.
+
+### ABC sales curve
+
+The ABC sales report appears at the bottom of the monitoring page and analyzes the rolling 30 days through the time of the query. It paginates through orders, filters to payment-completed orders (`payStatus = 2`), and ranks products by line-item revenue. Class A covers approximately the first 80% of cumulative revenue, B through approximately 95%, and C the remainder; the product that crosses a threshold completes that class. Items without enough product or revenue data are excluded and reported in the status. A Pareto chart follows the detailed table, with bars for product revenue and a cumulative-revenue line. The report refreshes every five minutes or on demand.
 
 ### Equipment tests and inventory
 
