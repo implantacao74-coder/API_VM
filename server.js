@@ -7,6 +7,13 @@ const PORT = Number(process.env.PORT || 8000);
 const AUTH_URL = "https://veda.figeth.com/api/auth/apply";
 const API_ORIGIN = "https://veda.figeth.com";
 const ROOT = __dirname;
+const PRODUCT_PHOTO_ROOT = path.join(ROOT, "Fotos Vending Machine");
+const PRODUCT_PHOTO_TYPES = new Map([
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".png", "image/png"],
+  [".webp", "image/webp"]
+]);
 const ALLOWED_AUTH_ORIGINS = new Set([
   "http://127.0.0.1:5500",
   "http://localhost:5500",
@@ -23,6 +30,10 @@ const STATIC_FILES = new Map([
   ["/monitor.js", ["monitor.js", "text/javascript; charset=utf-8"]],
   ["/monitor-tests.html", ["monitor-tests.html", "text/html; charset=utf-8"]],
   ["/monitor-tests.js", ["monitor-tests.js", "text/javascript; charset=utf-8"]],
+  ["/products.html", ["products.html", "text/html; charset=utf-8"]],
+  ["/products.css", ["products.css", "text/css; charset=utf-8"]],
+  ["/products.js", ["products.js", "text/javascript; charset=utf-8"]],
+  ["/products.json", ["products.json", "application/json; charset=utf-8"]],
   ["/monitor.css", ["monitor.css", "text/css; charset=utf-8"]],
   ["/style.css", ["style.css", "text/css; charset=utf-8"]],
   ["/auth-test.html", ["auth-test.html", "text/html; charset=utf-8"]],
@@ -327,6 +338,44 @@ const server = http.createServer(async (request, response) => {
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405, { Allow: "GET, HEAD" });
     response.end();
+    return;
+  }
+
+  const productPhotoUrlPrefix = "/Fotos%20Vending%20Machine/";
+  if (requestUrl.pathname.startsWith(productPhotoUrlPrefix)) {
+    let relativePath;
+    try {
+      relativePath = decodeURIComponent(requestUrl.pathname.slice(productPhotoUrlPrefix.length));
+    } catch {
+      response.writeHead(400);
+      response.end("Invalid photo path");
+      return;
+    }
+
+    const photoType = PRODUCT_PHOTO_TYPES.get(path.extname(relativePath).toLowerCase());
+    const photoPath = path.resolve(PRODUCT_PHOTO_ROOT, relativePath);
+    const relativePhotoPath = path.relative(PRODUCT_PHOTO_ROOT, photoPath);
+    if (!relativePath || relativePath.includes("\\") || !photoType ||
+        relativePhotoPath === ".." || relativePhotoPath.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativePhotoPath)) {
+      response.writeHead(404);
+      response.end("Not found");
+      return;
+    }
+
+    fs.readFile(photoPath, (error, content) => {
+      if (error) {
+        response.writeHead(404);
+        response.end("Not found");
+        return;
+      }
+
+      response.writeHead(200, {
+        "Content-Type": photoType,
+        "X-Content-Type-Options": "nosniff"
+      });
+      response.end(request.method === "HEAD" ? undefined : content);
+    });
     return;
   }
 

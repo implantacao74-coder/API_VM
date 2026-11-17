@@ -65,6 +65,7 @@ The application authenticates through the local backend on port `8000`. Only sup
 
 - Authentication endpoint: `https://veda.figeth.com/api/auth/apply`
 - Protected API base URL: `https://veda.figeth.com/api/luobo-machine-api`
+- Product catalog: open `products.html` to browse the inventory spreadsheet with product photos matched by product code.
 - Credentials are read by the backend and are not sent to or stored in the browser.
 - The access token stays in the current browser session and is removed when that session ends.
 - API requests pass through the local backend to avoid browser CORS restrictions.
@@ -140,6 +141,10 @@ The report shows the 10 most recent orders without a date filter and a separate,
 ### ABC sales curve
 
 The ABC sales report appears at the bottom of the monitoring page and analyzes the rolling 30 days through the time of the query. It paginates through orders, filters to payment-completed orders (`payStatus = 2`), and ranks products by line-item revenue. Class A covers approximately the first 80% of cumulative revenue, B through approximately 95%, and C the remainder; the product that crosses a threshold completes that class. Items without enough product or revenue data are excluded and reported in the status. A Pareto chart follows the detailed table, with bars for product revenue and a cumulative-revenue line. The report refreshes every five minutes or on demand.
+
+### Product catalog
+
+Open `products.html` to search products from `Fotos Vending Machine\relatorio-estoque-por-local-2026-11-17-1109 (1).xlsx` by code, name, or variation and filter by stock location. The catalog shows color, size, variation, sale price, estimated stock value, and quantity by location. Image files are matched by the product code at the beginning of their filename; products with no matching image remain listed with a placeholder. **Baixar relatório de produtos sem foto** exports every product without a matched image to a UTF-8 CSV spreadsheet, including product details and stock quantities by location; the file opens in Excel. The generated `products.json` contains the consolidated spreadsheet data. Product photos are served only from the `Fotos Vending Machine` directory and only for supported image types.
 
 ### Equipment tests and inventory
 

@@ -1,0 +1,1300 @@
+[
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "PRATA",
+    "size": "11",
+    "variation": "APEROL",
+    "quantity": 12,
+    "estimatedValue": 60,
+    "price": 5,
+    "stocks": {
+      "Pronto pra Venda": 12
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "PRATA",
+    "size": "11",
+    "variation": "Azul",
+    "quantity": 12,
+    "estimatedValue": 60,
+    "price": 5,
+    "stocks": {
+      "Pronto pra Venda": 12
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "PRATA",
+    "size": "12",
+    "variation": "APEROL",
+    "quantity": 10,
+    "estimatedValue": 50,
+    "price": 5,
+    "stocks": {
+      "VENDING MACHINES": 10
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "PRATA",
+    "size": "12",
+    "variation": "Azul",
+    "quantity": 10,
+    "estimatedValue": 50,
+    "price": 5,
+    "stocks": {
+      "Cadastro de Produtos": 10
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "SEM BANHO",
+    "size": "11",
+    "variation": "APEROL",
+    "quantity": 10,
+    "estimatedValue": 50,
+    "price": 5,
+    "stocks": {
+      "Descarte": 10
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "SEM BANHO",
+    "size": "11",
+    "variation": "Azul",
+    "quantity": 10,
+    "estimatedValue": 50,
+    "price": 5,
+    "stocks": {
+      "Descarte": 10
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "SEM BANHO",
+    "size": "12",
+    "variation": "APEROL",
+    "quantity": 15,
+    "estimatedValue": 75,
+    "price": 5,
+    "stocks": {
+      "Pronto pra Venda": 15
+    },
+    "images": []
+  },
+  {
+    "code": "AN261851",
+    "name": "teste 15 10",
+    "color": "SEM BANHO",
+    "size": "12",
+    "variation": "Azul",
+    "quantity": 10,
+    "estimatedValue": 50,
+    "price": 5,
+    "stocks": {
+      "Pronto pra Venda": 10
+    },
+    "images": []
+  },
+  {
+    "code": "AN282098RB",
+    "name": "Anel Regulável Solitária Rose Cut 8mm Yellow",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 5670,
+    "price": 189,
+    "stocks": {
+      "VENDING MACHINES": 30
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282098RB - Anel Regulável Solitária Rose Cut 8mm Yellow.jpg"
+    ]
+  },
+  {
+    "code": "AN282106RB",
+    "name": "Anel Regulável Redondo 3,5mm e Rose Cut 8mm Top Swiss",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 6600,
+    "price": 220,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/AN282106RB - Anel Regulável Redondo e Rose Cut Top Swiss.jpg"
+    ]
+  },
+  {
+    "code": "AN282377RB",
+    "name": "Anel Cravejado Ajustável Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 47,
+    "estimatedValue": 9395.3,
+    "price": 199.9,
+    "stocks": {
+      "VENDING MACHINES": 47
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282377RB - Anel Cravejado Ajustável Cristal .jpg"
+    ]
+  },
+  {
+    "code": "AN282378RB",
+    "name": "Anel Solitário Regulável Cristal 10mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11394,
+    "price": 189.9,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282378RB - Anel Solitário Regulável Cristal 10mm.jpg"
+    ]
+  },
+  {
+    "code": "AN282379RB",
+    "name": "Anel Regulável Três Aro Cravejado Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 15000,
+    "price": 250,
+    "stocks": {
+      "Pronto pra Venda": 2,
+      "VENDING MACHINES": 58
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/AN282379RB - Anel Regulável Três Aros Cravejado Cristal.jpg"
+    ]
+  },
+  {
+    "code": "BC282026",
+    "name": "Bracelete  Riviera Luxo Redonda 5mm Cristal",
+    "color": "Ouro",
+    "size": "",
+    "variation": "Cristal",
+    "quantity": 40,
+    "estimatedValue": 11076,
+    "price": 276.9,
+    "stocks": {
+      "Cadastro de Produtos": 40
+    },
+    "images": []
+  },
+  {
+    "code": "BC282026",
+    "name": "Bracelete  Riviera Luxo Redonda 5mm Cristal",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "Cristal",
+    "quantity": 40,
+    "estimatedValue": 11076,
+    "price": 276.9,
+    "stocks": {
+      "VENDING MACHINES": 40
+    },
+    "images": []
+  },
+  {
+    "code": "BC282231G",
+    "name": "Bracelete Cravejado Cristal",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 17700,
+    "price": 590,
+    "stocks": {
+      "VENDING MACHINES": 30
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BC282231G - Bracelete Cravejado Cristal.jpg"
+    ]
+  },
+  {
+    "code": "BC282358",
+    "name": "Bracelete Click Cravejado Vending Machine",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 70,
+    "estimatedValue": 20993,
+    "price": 299.9,
+    "stocks": {
+      "VENDING MACHINES": 70
+    },
+    "images": []
+  },
+  {
+    "code": "BC282358",
+    "name": "Bracelete Click Cravejado Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 13,
+    "estimatedValue": 3898.7,
+    "price": 299.9,
+    "stocks": {
+      "Cadastro de Produtos": 13
+    },
+    "images": []
+  },
+  {
+    "code": "BC282362",
+    "name": "Bracelete Aro Aberto Cravejado Vending Machine",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 106,
+    "estimatedValue": 31789.4,
+    "price": 299.9,
+    "stocks": {
+      "Pronto pra Venda": 46,
+      "VENDING MACHINES": 60
+    },
+    "images": []
+  },
+  {
+    "code": "BC282362",
+    "name": "Bracelete Aro Aberto Cravejado Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 19,
+    "estimatedValue": 5698.1,
+    "price": 299.9,
+    "stocks": {
+      "Cadastro de Produtos": 19
+    },
+    "images": []
+  },
+  {
+    "code": "BR282192",
+    "name": "Brinco Pendente de Pérola",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 16800,
+    "price": 280,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": []
+  },
+  {
+    "code": "BR282192",
+    "name": "Brinco Pendente de Pérola",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 16800,
+    "price": 280,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": []
+  },
+  {
+    "code": "BR282195",
+    "name": "Brinco Pendente de Coração Cravejado",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 16,
+    "estimatedValue": 3184,
+    "price": 199,
+    "stocks": {
+      "Cadastro de Produtos": 16
+    },
+    "images": []
+  },
+  {
+    "code": "BR282195",
+    "name": "Brinco Pendente de Coração Cravejado",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11940,
+    "price": 199,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": []
+  },
+  {
+    "code": "BR282198",
+    "name": "Brinco Pendente Triplo Formato Círculos",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 15594,
+    "price": 259.9,
+    "stocks": {
+      "Pronto pra Venda": 19,
+      "VENDING MACHINES": 41
+    },
+    "images": []
+  },
+  {
+    "code": "BR282198",
+    "name": "Brinco Pendente Triplo Formato Círculos",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 12,
+    "estimatedValue": 3118.8,
+    "price": 259.9,
+    "stocks": {
+      "Cadastro de Produtos": 12
+    },
+    "images": []
+  },
+  {
+    "code": "BR282201",
+    "name": "Brinco Argola Penduricalhos Três Ponto de Luz",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 44,
+    "estimatedValue": 7920,
+    "price": 180,
+    "stocks": {
+      "Cadastro de Produtos": 2,
+      "VENDING MACHINES": 42
+    },
+    "images": []
+  },
+  {
+    "code": "BR282201",
+    "name": "Brinco Argola Penduricalhos Três Ponto de Luz",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 10800,
+    "price": 180,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": []
+  },
+  {
+    "code": "BR282204RB",
+    "name": "Brinco Borboleta Cravejada Cristais",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11400,
+    "price": 190,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BR282204RB - Brinco Borboleta Cravejada Cristais .jpg"
+    ]
+  },
+  {
+    "code": "BR282205G",
+    "name": "Brinco Argola Cravejado de Cristais",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 17400,
+    "price": 290,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282205G - Brinco Argola Cravejado de Cristais.jpg"
+    ]
+  },
+  {
+    "code": "BR282206S",
+    "name": "Brinco Botão Abulado Texturizado",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 120,
+    "estimatedValue": 10788,
+    "price": 89.9,
+    "stocks": {
+      "VENDING MACHINES": 120
+    },
+    "images": []
+  },
+  {
+    "code": "BR282212",
+    "name": "Brinco Gota Luxo Cravejada",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 48,
+    "estimatedValue": 12955.2,
+    "price": 269.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 47
+    },
+    "images": []
+  },
+  {
+    "code": "BR282212",
+    "name": "Brinco Gota Luxo Cravejada",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 17,
+    "estimatedValue": 4588.3,
+    "price": 269.9,
+    "stocks": {
+      "VENDING MACHINES": 17
+    },
+    "images": []
+  },
+  {
+    "code": "BR282218RB",
+    "name": "Brinco Ear Hook Cravejado",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 16799.4,
+    "price": 279.99,
+    "stocks": {
+      "Cadastro de Produtos": 19,
+      "VENDING MACHINES": 41
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282218RB - Brinco Ear Hook Cravejado.jpg"
+    ]
+  },
+  {
+    "code": "BR282221",
+    "name": "Brinco Gota Cravejada Cristal",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 32,
+    "estimatedValue": 8636.8,
+    "price": 269.9,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 31
+    },
+    "images": []
+  },
+  {
+    "code": "BR282221",
+    "name": "Brinco Gota Cravejada Cristal",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 53,
+    "estimatedValue": 14304.7,
+    "price": 269.9,
+    "stocks": {
+      "Pronto pra Venda": 2,
+      "VENDING MACHINES": 51
+    },
+    "images": []
+  },
+  {
+    "code": "BR282283G",
+    "name": "Brinco Argola Click Cravejado e Coração",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 5970,
+    "price": 199,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282283G - Brinco Argola Click Cravejado e Coração,.jpg"
+    ]
+  },
+  {
+    "code": "BR282288RB",
+    "name": "Brinco Pêndulo Cravejado Baguete Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 10500,
+    "price": 350,
+    "stocks": {
+      "VENDING MACHINES": 30
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BR282288RB - Brinco Pêndulo Cravejado Baguete Cristal.jpg"
+    ]
+  },
+  {
+    "code": "BR282332RB",
+    "name": "Brinco De Perola Cravejado",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11934,
+    "price": 198.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282332RB - Brinco De Perola Cravejado.jpg"
+    ]
+  },
+  {
+    "code": "BR282354G",
+    "name": "Brinco De Perola Cravejado",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11934,
+    "price": 198.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282354G - Brinco De Perola Cravejado.jpg"
+    ]
+  },
+  {
+    "code": "CJ282351RB",
+    "name": "Conjunto Ponto de Luz Cristal Rose Cut Green Aplle",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 11997,
+    "price": 399.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CJ282351RB - Conjunto Ponto de Luz Cristal Rose Cut Green Apple.jpg"
+    ]
+  },
+  {
+    "code": "CJ282352RB",
+    "name": "Conjunto Três Gema Yellow Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 27000,
+    "price": 450,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": []
+  },
+  {
+    "code": "CJ282355G",
+    "name": "Conjunto Pêndulo Circulos MixBanho Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 10500,
+    "price": 350,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282355G - Conjunto Pêndulo Circulos MixBanho .jpg"
+    ]
+  },
+  {
+    "code": "CJ282356RB",
+    "name": "Conjunto Coração  Ponto De Luz Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 23400,
+    "price": 390,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CJ282356RB - Conjunto Coração Ponto De Luz.jpg"
+    ]
+  },
+  {
+    "code": "CJ282357RB",
+    "name": "Conjunto Gota Ponto de Luz Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 23400,
+    "price": 390,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282357RB - Conjunto Gota Ponto de Luz.jpg"
+    ]
+  },
+  {
+    "code": "CJ282365",
+    "name": "Conjunto Corações Liso e Cristal Vending Machine",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 118,
+    "estimatedValue": 44840,
+    "price": 380,
+    "stocks": {
+      "Pronto pra Venda": 100,
+      "VENDING MACHINES": 18
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282365 - Conjunto Corações Liso e Cristal .jpg"
+    ]
+  },
+  {
+    "code": "CJ282365",
+    "name": "Conjunto Corações Liso e Cristal Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 15,
+    "estimatedValue": 5700,
+    "price": 380,
+    "stocks": {
+      "VENDING MACHINES": 15
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282365 - Conjunto Corações Liso e Cristal .jpg"
+    ]
+  },
+  {
+    "code": "CL282368",
+    "name": "Colar Torcido Escamados Cravejado Vending Machine",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 53,
+    "estimatedValue": 31270,
+    "price": 590,
+    "stocks": {
+      "VENDING MACHINES": 53
+    },
+    "images": []
+  },
+  {
+    "code": "CL282368",
+    "name": "Colar Torcido Escamados Cravejado Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 17,
+    "estimatedValue": 10030,
+    "price": 590,
+    "stocks": {
+      "VENDING MACHINES": 17
+    },
+    "images": []
+  },
+  {
+    "code": "CL282371",
+    "name": "Colar Corações Cristais Vending Machine",
+    "color": "Ouro",
+    "size": "",
+    "variation": "",
+    "quantity": 35,
+    "estimatedValue": 17150,
+    "price": 490,
+    "stocks": {
+      "VENDING MACHINES": 35
+    },
+    "images": []
+  },
+  {
+    "code": "CL282371",
+    "name": "Colar Corações Cristais Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "",
+    "quantity": 14,
+    "estimatedValue": 6860,
+    "price": 490,
+    "stocks": {
+      "VENDING MACHINES": 14
+    },
+    "images": []
+  },
+  {
+    "code": "CL282374RB",
+    "name": "Colar Riviera Luxo Três Pontas Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 35994,
+    "price": 599.9,
+    "stocks": {
+      "Pronto pra Venda": 2,
+      "VENDING MACHINES": 58
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CL282374RB - Colar Riviera Luxo Três Pontas Cristal.jpg"
+    ]
+  },
+  {
+    "code": "CL282375RB",
+    "name": "Colar Riviera Luxo Duas Pontas Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 35994,
+    "price": 599.9,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CL282375RB - Colar Riviera Luxo Duas Pontas Cristal .jpg"
+    ]
+  },
+  {
+    "code": "CL282376RB",
+    "name": "Colar Riviera Luxo Três Pontos Yellow Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 35994,
+    "price": 599.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282376RB - Colar Riviera Luxo Três Pontas Yellow.jpg"
+    ]
+  },
+  {
+    "code": "CL282380G",
+    "name": "Colar Cravejada Luxo com Fecho Relógio Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 19500,
+    "price": 650,
+    "stocks": {
+      "VENDING MACHINES": 30
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282380G - Colar Cravejada Luxo com Fecho Relógio .jpg"
+    ]
+  },
+  {
+    "code": "CL282380RB",
+    "name": "Colar Luxo Flor Cristal e Colorido Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 58,
+    "estimatedValue": 23142,
+    "price": 399,
+    "stocks": {
+      "Pronto pra Venda": 12,
+      "VENDING MACHINES": 46
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282380RB - Colar Luxo Flor Cristal e Colorido.jpg"
+    ]
+  },
+  {
+    "code": "CL282381RB",
+    "name": "Colar Riviera Redonda 4mm Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "AMETISTA",
+    "quantity": 54,
+    "estimatedValue": 51300,
+    "price": 950,
+    "stocks": {
+      "VENDING MACHINES": 54
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ]
+  },
+  {
+    "code": "CL282381RB",
+    "name": "Colar Riviera Redonda 4mm Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "Cristal",
+    "quantity": 51,
+    "estimatedValue": 48450,
+    "price": 950,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 50
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ]
+  },
+  {
+    "code": "CL282381RB",
+    "name": "Colar Riviera Redonda 4mm Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "Rosa",
+    "quantity": 60,
+    "estimatedValue": 57000,
+    "price": 950,
+    "stocks": {
+      "Pronto pra Venda": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ]
+  },
+  {
+    "code": "CL282385RB",
+    "name": "Colar Riviera Ponto de Luz Cristal Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 57000,
+    "price": 950,
+    "stocks": {
+      "Pronto pra Venda": 1,
+      "VENDING MACHINES": 59
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282385RB - Colar Riviera Ponto de Luz Cristal.jpg"
+    ]
+  },
+  {
+    "code": "CL282387RB",
+    "name": "Colar Palito e Cristal Redondo Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 23994,
+    "price": 399.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282387RB - Colar Palito e Cristal Redondo.jpg"
+    ]
+  },
+  {
+    "code": "CL282388RB",
+    "name": "Colar Luxo Oval Cravejada Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 27000,
+    "price": 450,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282388RB - Colar Luxo Oval Cravejada.jpg"
+    ]
+  },
+  {
+    "code": "CL282562G",
+    "name": "Colar Cordão Baiano 5mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 17994,
+    "price": 299.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282562G - Colar Cordão Baiano 5mm.jpg"
+    ]
+  },
+  {
+    "code": "CL282563G",
+    "name": "Colar Cordão Baiano 6mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 20994,
+    "price": 349.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282563G - Colar Cordão Baiano 6mm .jpg"
+    ]
+  },
+  {
+    "code": "CL282564G",
+    "name": "Colar Cordão Baiano 8mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 23394,
+    "price": 389.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282564G - Colar Cordão Baiano 8mm  .jpg"
+    ]
+  },
+  {
+    "code": "PL282230RB",
+    "name": "Pulseira Riviera Luxo Cristal Top Swiss e Top Sky",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 27927,
+    "price": 930.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282230RB - Pulseira Riviera Luxo Cristal Top Swiss e Top Sky.jpg"
+    ]
+  },
+  {
+    "code": "PL282238RB",
+    "name": "Pulseira Luxo Cristal Safira Light",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 23997,
+    "price": 799.9,
+    "stocks": {
+      "Cadastro de Produtos": 2,
+      "VENDING MACHINES": 28
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282238RB - Pulseira Luxo Cristal Safira.jpg"
+    ]
+  },
+  {
+    "code": "PL282239RB",
+    "name": "Pulseira Luxo Navete Cristal Top Swiss e Top Sky",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 20997,
+    "price": 699.9,
+    "stocks": {
+      "Cadastro de Produtos": 1,
+      "VENDING MACHINES": 29
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282239RB - Pulseira Luxo Navete Cristal Top Swiss e Top Sky .jpg",
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282239RB - Pulseira Luxo Navete Cristal Top Swiss e Top Sky.jpg"
+    ]
+  },
+  {
+    "code": "PL282245RB",
+    "name": "Pulseira Cravejada Redonda Cristal e Safira",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 30,
+    "estimatedValue": 13500,
+    "price": 450,
+    "stocks": {
+      "Cadastro de Produtos": 3,
+      "VENDING MACHINES": 27
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282245RB - Pulseira Cravejada Redonda Cristal e Safira.jpg"
+    ]
+  },
+  {
+    "code": "PL282389RB",
+    "name": "Pulseira Riviera Duas Pontas Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 34,
+    "estimatedValue": 18700,
+    "price": 550,
+    "stocks": {
+      "VENDING MACHINES": 34
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282389RB - Pulseira Riviera Duas Pontas.jpg"
+    ]
+  },
+  {
+    "code": "PL282390RB",
+    "name": "Pulseira Luxo Oval Cravejada Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 17940,
+    "price": 299,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282390RB - Pulseira Luxo Oval Cravejada.jpg"
+    ]
+  },
+  {
+    "code": "PL282391RB",
+    "name": "Pulseira Luxo Flor Cristal e Colorido Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 17940,
+    "price": 299,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282391RB - Pulseira Luxo Flor Cristal e Colorido.jpg"
+    ]
+  },
+  {
+    "code": "PL282392RB",
+    "name": "Pulseira Riviera Redonda 4mm Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "AMETISTA",
+    "quantity": 60,
+    "estimatedValue": 35994,
+    "price": 599.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282392RB - Pulseira Riviera Redonda 4mm Vending Machine.jpg"
+    ]
+  },
+  {
+    "code": "PL282392RB",
+    "name": "Pulseira Riviera Redonda 4mm Vending Machine",
+    "color": "Ródio Branco",
+    "size": "",
+    "variation": "Rosa",
+    "quantity": 60,
+    "estimatedValue": 35994,
+    "price": 599.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282392RB - Pulseira Riviera Redonda 4mm Vending Machine.jpg"
+    ]
+  },
+  {
+    "code": "PL282395RB",
+    "name": "Pulseira Palito e Cristal Redondo Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 17994,
+    "price": 299.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282395RB - Pulseira Palito e Cristal Redondo.jpg"
+    ]
+  },
+  {
+    "code": "PL282396RB",
+    "name": "Pulseira Riviera Luxo Três Pontos Vending Machine",
+    "color": "RODIO BRANCO",
+    "size": "",
+    "variation": "Cristal",
+    "quantity": 60,
+    "estimatedValue": 17994,
+    "price": 299.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282396RB - Pulseira Riviera Luxo Três Pontas.jpg"
+    ]
+  },
+  {
+    "code": "PL282396RB",
+    "name": "Pulseira Riviera Luxo Três Pontos Vending Machine",
+    "color": "RODIO BRANCO",
+    "size": "",
+    "variation": "Yellow",
+    "quantity": 60,
+    "estimatedValue": 17994,
+    "price": 299.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282396RB - Pulseira Riviera Luxo Três Pontas.jpg"
+    ]
+  },
+  {
+    "code": "PL282399G",
+    "name": "Pulseira Luxo Margaridas Coloridas Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 50,
+    "estimatedValue": 14950,
+    "price": 299,
+    "stocks": {
+      "VENDING MACHINES": 50
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282399G - Pulseira Luxo Margaridas Coloridas.jpg"
+    ]
+  },
+  {
+    "code": "PL282400RB",
+    "name": "Pulseira Riviera Luxo com Bordas Cravejada Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 50,
+    "estimatedValue": 22500,
+    "price": 450,
+    "stocks": {
+      "VENDING MACHINES": 50
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282400RB - Pulseira Riviera Luxo com Bordas Cravejada.jpg"
+    ]
+  },
+  {
+    "code": "PL282401RB",
+    "name": "Pulseira Riviera Luxo Retangular Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 50,
+    "estimatedValue": 22500,
+    "price": 450,
+    "stocks": {
+      "VENDING MACHINES": 50
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282401RB - Pulseira Riviera Luxo Retangular.jpg"
+    ]
+  },
+  {
+    "code": "PL282559G",
+    "name": "Pulseira Cordão Baiano 8mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 14994,
+    "price": 249.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282559G - Pulseira Cordão Baiano 8mm.jpg"
+    ]
+  },
+  {
+    "code": "PL282560G",
+    "name": "Pulseira Cordão Baiano 6 mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11994,
+    "price": 199.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282560G - Pulseira Cordão Baiano 6 mm.jpg"
+    ]
+  },
+  {
+    "code": "PL282561G",
+    "name": "Pulseira Cordão Baiano 5mm Vending Machine",
+    "color": "",
+    "size": "",
+    "variation": "",
+    "quantity": 60,
+    "estimatedValue": 11394,
+    "price": 189.9,
+    "stocks": {
+      "VENDING MACHINES": 60
+    },
+    "images": [
+      "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282561G - Pulseira Cordão Baiano 5mm Vending Machine .jpg"
+    ]
+  }
+]

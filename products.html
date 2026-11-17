@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f1f1ef" />
+    <meta name="description" content="Consulte os produtos da Vending Machine, com estoque, preços e fotos associadas pelo código." />
+    <title>Catálogo de produtos | Feige</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="products.css" />
+  </head>
+  <body>
+    <main class="product-page">
+      <header class="product-header">
+        <div>
+          <p class="product-eyebrow">CATÁLOGO DE PRODUTOS</p>
+          <h1>Produtos Vending Machine</h1>
+          <p class="product-subtitle">Pesquise os produtos da planilha e confira suas fotos, preços e quantidades por local.</p>
+        </div>
+        <nav class="product-nav" aria-label="Navegação">
+          <a href="monitor.html">Monitoração</a>
+          <a href="index.html">API Tester</a>
+        </nav>
+      </header>
+
+      <section class="product-summary" aria-label="Resumo do catálogo">
+        <div class="product-summary-card">
+          <span>Variações</span>
+          <strong id="catalogProductCount">—</strong>
+        </div>
+        <div class="product-summary-card">
+          <span>Com foto</span>
+          <strong id="catalogPhotoCount">—</strong>
+        </div>
+        <div class="product-summary-card">
+          <span>Unidades na planilha</span>
+          <strong id="catalogUnitCount">—</strong>
+        </div>
+      </section>
+
+      <section class="product-catalog" aria-labelledby="catalogTitle">
+        <div class="product-catalog-heading">
+          <div>
+            <h2 id="catalogTitle">Lista de produtos</h2>
+            <p>As fotos são relacionadas pelo código no início do nome do arquivo.</p>
+          </div>
+        </div>
+        <div class="product-filters">
+          <label for="productSearch">Buscar produto
+            <input id="productSearch" type="search" placeholder="Código, nome, cor ou variação" autocomplete="off" />
+          </label>
+          <label for="productLocation">Local do estoque
+            <select id="productLocation">
+              <option value="">Todos os locais</option>
+            </select>
+          </label>
+        </div>
+        <div class="product-report-actions">
+          <button id="downloadNoPhotoReport" class="secondary" type="button" disabled>
+            Baixar relatório de produtos sem foto (.csv)
+          </button>
+        </div>
+        <p id="catalogStatus" class="catalog-status" role="status" aria-live="polite">Carregando produtos...</p>
+        <div id="productGrid" class="product-grid" aria-live="polite"></div>
+      </section>
+
+      <footer class="product-footer">
+        Dados da planilha de estoque de 17/11/2026. Os produtos sem foto correspondente continuam disponíveis na busca.
+      </footer>
+    </main>
+    <script src="products.js"></script>
+  </body>
+</html>
