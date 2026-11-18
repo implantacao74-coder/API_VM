@@ -1,3 +1,5 @@
 logs/
 .secrets/
 credentials.json
+Fotos Vending Machine/**/*.zip
+Fotos Vending Machine/**/*.mp4
