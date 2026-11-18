@@ -3,3 +3,12 @@ logs/
 credentials.json
 Fotos Vending Machine/**/*.zip
 Fotos Vending Machine/**/*.mp4
+Fotos Vending Machine/**/*.[jJ][pP][gG]
+Fotos Vending Machine/**/*.[jJ][pP][eE][gG]
+Fotos Vending Machine/**/*.[pP][nN][gG]
+Fotos Vending Machine/**/*.[wW][eE][bB][pP]
+Fotos Vending Machine/**/*.[gG][iI][fF]
+Fotos Vending Machine/**/*.[bB][mM][pP]
+Fotos Vending Machine/**/*.[hH][eE][iI][cC]
+Fotos Vending Machine/**/*.[tT][iI][fF]
+Fotos Vending Machine/**/*.[tT][iI][fF][fF]
