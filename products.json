@@ -11,7 +11,8 @@
     "stocks": {
       "Pronto pra Venda": 12
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -25,7 +26,8 @@
     "stocks": {
       "Pronto pra Venda": 12
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -39,7 +41,8 @@
     "stocks": {
       "VENDING MACHINES": 10
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -53,7 +56,8 @@
     "stocks": {
       "Cadastro de Produtos": 10
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -67,7 +71,8 @@
     "stocks": {
       "Descarte": 10
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -81,7 +86,8 @@
     "stocks": {
       "Descarte": 10
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -95,7 +101,8 @@
     "stocks": {
       "Pronto pra Venda": 15
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN261851",
@@ -109,7 +116,8 @@
     "stocks": {
       "Pronto pra Venda": 10
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "AN282098RB",
@@ -125,7 +133,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282098RB - Anel Regulável Solitária Rose Cut 8mm Yellow.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "AN282106RB",
@@ -142,6 +151,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/AN282106RB - Anel Regulável Redondo e Rose Cut Top Swiss.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/AN282106RB - Anel Regulável Redondo 3,5mm e Rose Cut 8mm Top Swiss .mp4"
     ]
   },
   {
@@ -158,6 +170,9 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282377RB - Anel Cravejado Ajustável Cristal .jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/AN282377RB - Anel Cravejado Ajustável Cristal .mp4"
     ]
   },
   {
@@ -175,6 +190,9 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/AN282378RB - Anel Solitário Regulável Cristal 10mm.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/AN282378RB - Anel Solitário Regulável Cristal 10mm.mp4"
     ]
   },
   {
@@ -192,7 +210,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/AN282379RB - Anel Regulável Três Aros Cravejado Cristal.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BC282026",
@@ -206,7 +225,8 @@
     "stocks": {
       "Cadastro de Produtos": 40
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BC282026",
@@ -220,7 +240,8 @@
     "stocks": {
       "VENDING MACHINES": 40
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BC282231G",
@@ -236,7 +257,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BC282231G - Bracelete Cravejado Cristal.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BC282358",
@@ -250,7 +272,8 @@
     "stocks": {
       "VENDING MACHINES": 70
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BC282358",
@@ -264,7 +287,8 @@
     "stocks": {
       "Cadastro de Produtos": 13
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BC282362",
@@ -279,7 +303,8 @@
       "Pronto pra Venda": 46,
       "VENDING MACHINES": 60
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BC282362",
@@ -293,7 +318,8 @@
     "stocks": {
       "Cadastro de Produtos": 19
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282192",
@@ -308,7 +334,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 59
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282192",
@@ -323,7 +350,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 59
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282195",
@@ -337,7 +365,8 @@
     "stocks": {
       "Cadastro de Produtos": 16
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282195",
@@ -352,7 +381,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 59
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282198",
@@ -367,7 +397,8 @@
       "Pronto pra Venda": 19,
       "VENDING MACHINES": 41
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282198",
@@ -381,7 +412,8 @@
     "stocks": {
       "Cadastro de Produtos": 12
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282201",
@@ -396,7 +428,8 @@
       "Cadastro de Produtos": 2,
       "VENDING MACHINES": 42
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282201",
@@ -411,7 +444,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 59
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282204RB",
@@ -427,6 +461,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BR282204RB - Brinco Borboleta Cravejada Cristais .jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/BR282204RB - Brinco Borboleta Cravejada Cristais .mp4"
     ]
   },
   {
@@ -444,7 +481,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282205G - Brinco Argola Cravejado de Cristais.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BR282206S",
@@ -458,7 +496,8 @@
     "stocks": {
       "VENDING MACHINES": 120
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282212",
@@ -473,7 +512,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 47
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282212",
@@ -487,7 +527,8 @@
     "stocks": {
       "VENDING MACHINES": 17
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282218RB",
@@ -504,7 +545,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282218RB - Brinco Ear Hook Cravejado.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BR282221",
@@ -519,7 +561,8 @@
       "Pronto pra Venda": 1,
       "VENDING MACHINES": 31
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282221",
@@ -534,7 +577,8 @@
       "Pronto pra Venda": 2,
       "VENDING MACHINES": 51
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "BR282283G",
@@ -551,7 +595,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282283G - Brinco Argola Click Cravejado e Coração,.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BR282288RB",
@@ -567,6 +612,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/BR282288RB - Brinco Pêndulo Cravejado Baguete Cristal.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/BR282288RB - Brinco Pêndulo Cravejado Baguete Cristal.mp4"
     ]
   },
   {
@@ -584,7 +632,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282332RB - Brinco De Perola Cravejado.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "BR282354G",
@@ -601,7 +650,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/BR282354G - Brinco De Perola Cravejado.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282351RB",
@@ -618,7 +668,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CJ282351RB - Conjunto Ponto de Luz Cristal Rose Cut Green Apple.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282352RB",
@@ -633,7 +684,8 @@
       "Cadastro de Produtos": 1,
       "VENDING MACHINES": 59
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "CJ282355G",
@@ -650,7 +702,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282355G - Conjunto Pêndulo Circulos MixBanho .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282356RB",
@@ -667,7 +720,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CJ282356RB - Conjunto Coração Ponto De Luz.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282357RB",
@@ -684,7 +738,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282357RB - Conjunto Gota Ponto de Luz.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282365",
@@ -701,7 +756,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282365 - Conjunto Corações Liso e Cristal .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CJ282365",
@@ -717,7 +773,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CJ282365 - Conjunto Corações Liso e Cristal .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282368",
@@ -731,7 +788,8 @@
     "stocks": {
       "VENDING MACHINES": 53
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "CL282368",
@@ -745,7 +803,8 @@
     "stocks": {
       "VENDING MACHINES": 17
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "CL282371",
@@ -759,7 +818,8 @@
     "stocks": {
       "VENDING MACHINES": 35
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "CL282371",
@@ -773,7 +833,8 @@
     "stocks": {
       "VENDING MACHINES": 14
     },
-    "images": []
+    "images": [],
+    "videos": []
   },
   {
     "code": "CL282374RB",
@@ -790,7 +851,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CL282374RB - Colar Riviera Luxo Três Pontas Cristal.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282375RB",
@@ -807,7 +869,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/CL282375RB - Colar Riviera Luxo Duas Pontas Cristal .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282376RB",
@@ -823,7 +886,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282376RB - Colar Riviera Luxo Três Pontas Yellow.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282380G",
@@ -839,7 +903,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282380G - Colar Cravejada Luxo com Fecho Relógio .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282380RB",
@@ -856,7 +921,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282380RB - Colar Luxo Flor Cristal e Colorido.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282381RB",
@@ -872,6 +938,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/CL282381RB - Colar Riviera Redonda 4mm ROSA.mp4"
     ]
   },
   {
@@ -889,6 +958,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/CL282381RB - Colar Riviera Redonda 4mm ROSA.mp4"
     ]
   },
   {
@@ -905,6 +977,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282381RB - Colar Riviera Redonda 4mm .jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/CL282381RB - Colar Riviera Redonda 4mm ROSA.mp4"
     ]
   },
   {
@@ -922,7 +997,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282385RB - Colar Riviera Ponto de Luz Cristal.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282387RB",
@@ -938,6 +1014,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282387RB - Colar Palito e Cristal Redondo.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/CL282387RB - Colar Palito e Cristal Redondo.mp4"
     ]
   },
   {
@@ -954,7 +1033,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282388RB - Colar Luxo Oval Cravejada.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282562G",
@@ -970,7 +1050,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282562G - Colar Cordão Baiano 5mm.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282563G",
@@ -986,7 +1067,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282563G - Colar Cordão Baiano 6mm .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "CL282564G",
@@ -1002,7 +1084,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/CL282564G - Colar Cordão Baiano 8mm  .jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282230RB",
@@ -1019,7 +1102,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282230RB - Pulseira Riviera Luxo Cristal Top Swiss e Top Sky.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282238RB",
@@ -1036,7 +1120,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282238RB - Pulseira Luxo Cristal Safira.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282239RB",
@@ -1054,7 +1139,8 @@
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282239RB - Pulseira Luxo Navete Cristal Top Swiss e Top Sky .jpg",
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282239RB - Pulseira Luxo Navete Cristal Top Swiss e Top Sky.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282245RB",
@@ -1071,7 +1157,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282245RB - Pulseira Cravejada Redonda Cristal e Safira.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282389RB",
@@ -1087,7 +1174,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282389RB - Pulseira Riviera Duas Pontas.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282390RB",
@@ -1103,7 +1191,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282390RB - Pulseira Luxo Oval Cravejada.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282391RB",
@@ -1119,7 +1208,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282391RB - Pulseira Luxo Flor Cristal e Colorido.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282392RB",
@@ -1135,7 +1225,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282392RB - Pulseira Riviera Redonda 4mm Vending Machine.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282392RB",
@@ -1151,7 +1242,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282392RB - Pulseira Riviera Redonda 4mm Vending Machine.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282395RB",
@@ -1167,6 +1259,9 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282395RB - Pulseira Palito e Cristal Redondo.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/PL282395RB - Pulseira Palito e Cristal Redondo.mp4"
     ]
   },
   {
@@ -1183,7 +1278,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282396RB - Pulseira Riviera Luxo Três Pontas.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282396RB",
@@ -1199,7 +1295,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282396RB - Pulseira Riviera Luxo Três Pontas.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282399G",
@@ -1215,7 +1312,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282399G - Pulseira Luxo Margaridas Coloridas.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282400RB",
@@ -1231,7 +1329,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282400RB - Pulseira Riviera Luxo com Bordas Cravejada.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282401RB",
@@ -1247,6 +1346,9 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282401RB - Pulseira Riviera Luxo Retangular.jpg"
+    ],
+    "videos": [
+      "Vídeos 10s-20261116T182139Z-1-001/Vídeos 10s/PL282401RB - Pulseira Riviera Luxo Retangular.mp4"
     ]
   },
   {
@@ -1263,7 +1365,8 @@
     },
     "images": [
       "Fotos Karina-20261116T181948Z-1-001/Fotos Karina/PL282559G - Pulseira Cordão Baiano 8mm.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282560G",
@@ -1279,7 +1382,8 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282560G - Pulseira Cordão Baiano 6 mm.jpg"
-    ]
+    ],
+    "videos": []
   },
   {
     "code": "PL282561G",
@@ -1295,6 +1399,7 @@
     },
     "images": [
       "Fotos Karol -20261116T203853Z-1-001/Fotos Karol/PL282561G - Pulseira Cordão Baiano 5mm Vending Machine .jpg"
-    ]
+    ],
+    "videos": []
   }
 ]

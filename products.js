@@ -10,6 +10,7 @@ const catalogPhotoCount = document.getElementById("catalogPhotoCount");
 const catalogUnitCount = document.getElementById("catalogUnitCount");
 const catalogPhotoEstimatedValue = document.getElementById("catalogPhotoEstimatedValue");
 const downloadNoPhotoReport = document.getElementById("downloadNoPhotoReport");
+const downloadWithMediaReportButton = document.getElementById("downloadWithMediaReport");
 const numberFormat = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
 const currencyFormat = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -21,6 +22,7 @@ const csvNumberFormat = new Intl.NumberFormat("pt-BR", {
 });
 
 let products = [];
+let catalogProducts = [];
 
 function normalizeText(value) {
   return String(value || "")
@@ -45,6 +47,14 @@ function formatQuantity(quantity) {
 function photoUrl(filePath) {
   const encodedPath = filePath.split("/").map(encodeURIComponent).join("/");
   return `/Fotos%20Vending%20Machine/${encodedPath}`;
+}
+
+function mediaUrl(filePath) {
+  return new URL(photoUrl(filePath), window.location.href).href;
+}
+
+function hasProductMedia(product) {
+  return product.images.length > 0 || product.videos.length > 0;
 }
 
 function appendFact(list, label, value) {
@@ -142,7 +152,7 @@ function createProductCard(product) {
 function renderProducts() {
   const query = normalizeText(productSearch.value.trim());
   const selectedLocation = productLocation.value;
-  const filtered = products.filter((product) => {
+  const filtered = catalogProducts.filter((product) => {
     if (selectedLocation && !Object.hasOwn(product.stocks, selectedLocation)) {
       return false;
     }
@@ -157,7 +167,8 @@ function renderProducts() {
       product.size,
       product.variation,
       ...Object.keys(product.stocks),
-      ...product.images.map((image) => image.split("/").pop())
+      ...product.images.map((image) => image.split("/").pop()),
+      ...product.videos.map((video) => video.split("/").pop())
     ].map(normalizeText).join(" ");
     return searchable.includes(query);
   });
@@ -177,14 +188,17 @@ function renderProducts() {
     productGrid.append(cards);
   }
 
-  const withPhotos = filtered.filter((product) => product.images.length).length;
+  const withPhotos = filtered.filter((product) => product.images.length > 0).length;
+  const withVideoOnly = filtered.filter((product) =>
+    product.images.length === 0 && product.videos.length > 0
+  ).length;
   catalogStatus.textContent =
-    `Exibindo ${filtered.length} de ${products.length} variações; ${withPhotos} com foto e ${filtered.length - withPhotos} sem foto correspondente.`;
+    `Exibindo ${filtered.length} de ${catalogProducts.length} variações com mídia; ${withPhotos} com foto e ${withVideoOnly} apenas com vídeo.`;
 }
 
 function populateLocations() {
   const locations = new Set();
-  for (const product of products) {
+  for (const product of catalogProducts) {
     for (const location of Object.keys(product.stocks)) {
       locations.add(location);
     }
@@ -207,12 +221,10 @@ function csvNumber(value) {
   return csvNumberFormat.format(Number(value) || 0);
 }
 
-function downloadMissingPhotoReport() {
-  const missingPhotoProducts = products
-    .filter((product) => product.images.length === 0)
-    .sort((a, b) =>
-      Number(b.price) - Number(a.price) || a.code.localeCompare(b.code, "pt-BR")
-    );
+function downloadProductReport(reportProducts, fileSuffix, successMessage, includeMedia) {
+  const sortedProducts = [...reportProducts].sort((a, b) =>
+    Number(b.price) - Number(a.price) || a.code.localeCompare(b.code, "pt-BR")
+  );
   const locations = [...new Set(products.flatMap((product) => Object.keys(product.stocks)))]
     .sort((a, b) => a.localeCompare(b, "pt-BR"));
   const headers = [
@@ -224,9 +236,10 @@ function downloadMissingPhotoReport() {
     "Preço de venda (R$)",
     "Quantidade total",
     "Valor estimado (R$)",
+    ...(includeMedia ? ["Foto", "Vídeo"] : []),
     ...locations
   ].map(csvText);
-  const rows = missingPhotoProducts.map((product) => [
+  const rows = sortedProducts.map((product) => [
     csvText(product.code),
     csvText(product.name),
     csvText(product.color),
@@ -235,6 +248,10 @@ function downloadMissingPhotoReport() {
     csvNumber(product.price),
     csvNumber(product.quantity),
     csvNumber(product.estimatedValue),
+    ...(includeMedia ? [
+      csvText(product.images.map(mediaUrl).join(" | ")),
+      csvText(product.videos.map(mediaUrl).join(" | "))
+    ] : []),
     ...locations.map((location) => csvNumber(product.stocks[location]))
   ]);
   const csv = `\uFEFF${[headers, ...rows].map((row) => row.join(";")).join("\r\n")}`;
@@ -247,12 +264,32 @@ function downloadMissingPhotoReport() {
     String(now.getDate()).padStart(2, "0")
   ].join("-");
   downloadLink.href = objectUrl;
-  downloadLink.download = `relatorio-produtos-sem-foto-${date}.csv`;
+  downloadLink.download = `relatorio-produtos-${fileSuffix}-${date}.csv`;
   document.body.append(downloadLink);
   downloadLink.click();
   downloadLink.remove();
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-  catalogStatus.textContent = `Relatório baixado com ${missingPhotoProducts.length} produtos sem foto.`;
+  catalogStatus.textContent = successMessage(sortedProducts.length);
+}
+
+function downloadMissingPhotoReport() {
+  const missingPhotoProducts = products.filter((product) => product.images.length === 0);
+  downloadProductReport(
+    missingPhotoProducts,
+    "sem-foto",
+    (count) => `Relatório baixado com ${count} produtos sem foto.`,
+    false
+  );
+}
+
+function downloadWithMediaReport() {
+  const productsWithMedia = catalogProducts;
+  downloadProductReport(
+    productsWithMedia,
+    "com-midia",
+    (count) => `Relatório baixado com ${count} produtos com foto e/ou vídeo.`,
+    true
+  );
 }
 
 async function loadProducts() {
@@ -265,25 +302,27 @@ async function loadProducts() {
     if (!Array.isArray(data) || data.some((product) =>
       !product || typeof product.code !== "string" ||
       typeof product.name !== "string" || !product.stocks ||
-      !Array.isArray(product.images)
+      !Array.isArray(product.images) || !Array.isArray(product.videos)
     )) {
       throw new Error("O arquivo do catálogo contém dados inválidos.");
     }
 
     products = data;
-    catalogProductCount.textContent = numberFormat.format(products.length);
+    catalogProducts = products.filter(hasProductMedia);
+    catalogProductCount.textContent = numberFormat.format(catalogProducts.length);
     catalogPhotoCount.textContent = numberFormat.format(
-      products.filter((product) => product.images.length).length
+      catalogProducts.filter((product) => product.images.length > 0).length
     );
     catalogUnitCount.textContent = numberFormat.format(
-      products.reduce((sum, product) => sum + (Number(product.quantity) || 0), 0)
+      catalogProducts.reduce((sum, product) => sum + (Number(product.quantity) || 0), 0)
     );
-    const photoEstimatedCents = products.reduce((sum, product) =>
+    const photoEstimatedCents = catalogProducts.reduce((sum, product) =>
       sum + (product.images.length ? Math.round((Number(product.estimatedValue) || 0) * 100) : 0), 0
     );
     catalogPhotoEstimatedValue.textContent = currencyFormat.format(photoEstimatedCents / 100);
     populateLocations();
     downloadNoPhotoReport.disabled = false;
+    downloadWithMediaReportButton.disabled = false;
     renderProducts();
   } catch (error) {
     catalogStatus.classList.add("error");
@@ -295,4 +334,5 @@ productSearch.addEventListener("input", renderProducts);
 productLocation.addEventListener("change", renderProducts);
 productSort.addEventListener("change", renderProducts);
 downloadNoPhotoReport.addEventListener("click", downloadMissingPhotoReport);
+downloadWithMediaReportButton.addEventListener("click", downloadWithMediaReport);
 loadProducts();

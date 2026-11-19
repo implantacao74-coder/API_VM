@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f1f1ef" />
-    <meta name="description" content="Consulte os produtos da Vending Machine, com estoque, preços e fotos associadas pelo código." />
+    <meta name="description" content="Consulte os produtos da Vending Machine, com estoque, preços e mídias associadas pelo código." />
     <title>Catálogo de produtos | Feige</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="products.css" />
@@ -25,7 +25,7 @@
 
       <section class="product-summary" aria-label="Resumo do catálogo">
         <div class="product-summary-card">
-          <span>Variações</span>
+          <span>Variações com mídia</span>
           <strong id="catalogProductCount">—</strong>
         </div>
         <div class="product-summary-card">
@@ -33,7 +33,7 @@
           <strong id="catalogPhotoCount">—</strong>
         </div>
         <div class="product-summary-card">
-          <span>Unidades na planilha</span>
+          <span>Unidades com mídia</span>
           <strong id="catalogUnitCount">—</strong>
         </div>
         <div class="product-summary-card product-summary-value">
@@ -46,7 +46,7 @@
         <div class="product-catalog-heading">
           <div>
             <h2 id="catalogTitle">Lista de produtos</h2>
-            <p>As fotos são relacionadas pelo código no início do nome do arquivo.</p>
+            <p>As fotos e os vídeos dos relatórios são relacionados pelo código no início do nome do arquivo.</p>
           </div>
           <label class="product-sort-control" for="productSort">Ordenar por
             <select id="productSort">
@@ -70,13 +70,16 @@
           <button id="downloadNoPhotoReport" class="secondary" type="button" disabled>
             Baixar relatório de produtos sem foto (.csv)
           </button>
+          <button id="downloadWithMediaReport" class="secondary" type="button" disabled>
+            Baixar relatório de produtos com foto e/ou vídeo (.csv)
+          </button>
         </div>
         <p id="catalogStatus" class="catalog-status" role="status" aria-live="polite">Carregando produtos...</p>
         <div id="productGrid" class="product-grid" aria-live="polite"></div>
       </section>
 
       <footer class="product-footer">
-        Dados da planilha de estoque de 17/11/2026. Os produtos sem foto correspondente continuam disponíveis na busca.
+        Dados da planilha de estoque de 17/11/2026. Esta página exibe apenas produtos com foto ou vídeo correspondente; o relatório de produtos sem foto permanece disponível.
       </footer>
     </main>
     <script src="products.js"></script>

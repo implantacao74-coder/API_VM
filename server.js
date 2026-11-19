@@ -7,12 +7,13 @@ const PORT = Number(process.env.PORT || 8000);
 const AUTH_URL = "https://veda.figeth.com/api/auth/apply";
 const API_ORIGIN = "https://veda.figeth.com";
 const ROOT = __dirname;
-const PRODUCT_PHOTO_ROOT = path.join(ROOT, "Fotos Vending Machine");
-const PRODUCT_PHOTO_TYPES = new Map([
+const PRODUCT_MEDIA_ROOT = path.join(ROOT, "Fotos Vending Machine");
+const PRODUCT_MEDIA_TYPES = new Map([
   [".jpg", "image/jpeg"],
   [".jpeg", "image/jpeg"],
   [".png", "image/png"],
-  [".webp", "image/webp"]
+  [".webp", "image/webp"],
+  [".mp4", "video/mp4"]
 ]);
 const ALLOWED_AUTH_ORIGINS = new Set([
   "http://127.0.0.1:5500",
@@ -341,29 +342,29 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  const productPhotoUrlPrefix = "/Fotos%20Vending%20Machine/";
-  if (requestUrl.pathname.startsWith(productPhotoUrlPrefix)) {
+  const productMediaUrlPrefix = "/Fotos%20Vending%20Machine/";
+  if (requestUrl.pathname.startsWith(productMediaUrlPrefix)) {
     let relativePath;
     try {
-      relativePath = decodeURIComponent(requestUrl.pathname.slice(productPhotoUrlPrefix.length));
+      relativePath = decodeURIComponent(requestUrl.pathname.slice(productMediaUrlPrefix.length));
     } catch {
       response.writeHead(400);
-      response.end("Invalid photo path");
+      response.end("Invalid media path");
       return;
     }
 
-    const photoType = PRODUCT_PHOTO_TYPES.get(path.extname(relativePath).toLowerCase());
-    const photoPath = path.resolve(PRODUCT_PHOTO_ROOT, relativePath);
-    const relativePhotoPath = path.relative(PRODUCT_PHOTO_ROOT, photoPath);
-    if (!relativePath || relativePath.includes("\\") || !photoType ||
-        relativePhotoPath === ".." || relativePhotoPath.startsWith(`..${path.sep}`) ||
-        path.isAbsolute(relativePhotoPath)) {
+    const mediaType = PRODUCT_MEDIA_TYPES.get(path.extname(relativePath).toLowerCase());
+    const mediaPath = path.resolve(PRODUCT_MEDIA_ROOT, relativePath);
+    const relativeMediaPath = path.relative(PRODUCT_MEDIA_ROOT, mediaPath);
+    if (!relativePath || relativePath.includes("\\") || !mediaType ||
+        relativeMediaPath === ".." || relativeMediaPath.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativeMediaPath)) {
       response.writeHead(404);
       response.end("Not found");
       return;
     }
 
-    fs.readFile(photoPath, (error, content) => {
+    fs.readFile(mediaPath, (error, content) => {
       if (error) {
         response.writeHead(404);
         response.end("Not found");
@@ -371,7 +372,7 @@ const server = http.createServer(async (request, response) => {
       }
 
       response.writeHead(200, {
-        "Content-Type": photoType,
+        "Content-Type": mediaType,
         "X-Content-Type-Options": "nosniff"
       });
       response.end(request.method === "HEAD" ? undefined : content);

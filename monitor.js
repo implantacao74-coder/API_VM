@@ -380,7 +380,7 @@ function resultValue(key, value, toolId) {
   }
   if (toolId === "orders" && [
     "actualAmount", "amount", "orderAmount", "payAmount", "price", "returnMoney",
-    "salePrice", "totalAmount", "totalMoney", "totalPrice"
+    "productTotalMoney", "salePrice", "totalAmount", "totalMoney", "totalPrice"
   ].includes(key)) {
     return formatSaleAmount(parseSaleAmount(value));
   }
@@ -703,8 +703,8 @@ function parseSaleAmount(value) {
 }
 
 const SALE_AMOUNT_KEYS = [
-  "actualAmount", "payAmount", "orderAmount", "totalAmount",
-  "totalMoney", "totalPrice", "amount", "price", "salePrice"
+  "actualAmount", "payAmount", "orderAmount", "productTotalMoney",
+  "totalAmount", "totalMoney", "totalPrice", "amount", "price", "salePrice"
 ];
 
 function isAmountInMinorUnits(amount, majorAmount) {
@@ -714,19 +714,28 @@ function isAmountInMinorUnits(amount, majorAmount) {
 
 function getSaleItemAmount(item, quantityOverride) {
   if (!item || typeof item !== "object") return null;
+  const nestedProduct = item.product && typeof item.product === "object" && !Array.isArray(item.product)
+    ? item.product
+    : {};
   const lineAmount = parseSaleAmount(
-    item.totalAmount ?? item.totalPrice ?? item.amount ?? item.payAmount ?? item.actualAmount
+    item.totalAmount ?? item.totalMoney ?? item.productTotalMoney ?? item.totalPrice ??
+    item.amount ?? item.payAmount ?? item.actualAmount
   );
   let unitPrice = parseSaleAmount(item.price ?? item.salePrice ?? item.unitPrice);
-  const costPrice = parseSaleAmount(item.costPrice);
-  if (unitPrice !== null && costPrice !== null && costPrice > 0 &&
-      unitPrice / costPrice >= 100 && unitPrice / 100 >= costPrice) {
-    unitPrice /= 100;
-  }
+  const costPrice = parseSaleAmount(item.costPrice ?? nestedProduct.costPrice);
   const quantityValue = item.quantity ?? item.count ?? quantityOverride;
   const quantity = quantityValue === null || quantityValue === undefined || quantityValue === ""
     ? null
     : Number(quantityValue);
+  // Equal cost and sale prices hide the scale ratio, so the line total and quantity must corroborate it.
+  const amountsShareMinorUnitScale = Number.isInteger(unitPrice) && unitPrice >= 100 &&
+    costPrice === unitPrice && Number.isFinite(quantity) && quantity > 0 &&
+    lineAmount === unitPrice * quantity;
+  if (unitPrice !== null && costPrice !== null && costPrice > 0 &&
+      ((unitPrice / costPrice >= 100 && unitPrice / 100 >= costPrice) ||
+       amountsShareMinorUnitScale)) {
+    unitPrice /= 100;
+  }
   const hasCalculatedAmount = unitPrice !== null && Number.isFinite(quantity) && quantity >= 0;
   const calculatedAmount = hasCalculatedAmount ? unitPrice * quantity : null;
 
