@@ -1616,6 +1616,7 @@ function renderReplenishmentReport(records) {
   for (const heading of [
     "Mola / canaleta",
     "Produto",
+    "Barcode",
     "Quantidade Máxima",
     "Quantidade na máquina",
     "Quantidade necessária para reposição"
@@ -1629,7 +1630,7 @@ function renderReplenishmentReport(records) {
   if (records.length === 0) {
     const row = document.createElement("tr");
     const cell = createResultElement("td", "result-empty", "A API não retornou canais de estoque para esta máquina.");
-    cell.colSpan = 5;
+    cell.colSpan = 6;
     row.appendChild(cell);
     body.appendChild(row);
   }
@@ -1644,6 +1645,7 @@ function renderReplenishmentReport(records) {
     const values = [
       channel,
       record.productName || record.categoryName || "—",
+      record.barcode ?? "—",
       maximum === null ? "—" : maximum.toLocaleString("pt-BR"),
       current === null ? "—" : current.toLocaleString("pt-BR"),
       replenishment === null ? "—" : replenishment.toLocaleString("pt-BR")

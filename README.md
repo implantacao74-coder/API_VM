@@ -115,7 +115,7 @@ Open `monitor.html` from the same origin after authenticating. The page includes
 
 ### Replenishment report
 
-At the top of the monitoring page, select a machine to generate a per-channel replenishment report. It shows the machine details, maximum quantity (`capacity`, falling back to `totalInventoryCount`), current quantity, and number needed to refill each channel. The needed quantity is `max(0, maximum - current)`; missing quantities are displayed as unavailable. Use **Atualizar relatório** to query the selected machine again. **Imprimir / salvar PDF** opens the browser's print dialog; choose **Save as PDF** (or the equivalent option in your browser) to create the PDF. The print layout contains only the report and its machine details.
+At the top of the monitoring page, select a machine to generate a per-channel replenishment report. It shows each product's barcode, maximum quantity (`capacity`, falling back to `totalInventoryCount`), current quantity, and number needed to refill each channel. The needed quantity is `max(0, maximum - current)`; missing quantities are displayed as unavailable. Use **Atualizar relatório** to query the selected machine again. **Imprimir / salvar PDF** opens the browser's print dialog; choose **Save as PDF** (or the equivalent option in your browser) to create the PDF. The print layout contains only the report and its machine details.
 
 ### Product dispensing
 
