@@ -141,7 +141,7 @@ The report shows the 10 most recent orders without a date filter and a separate,
 
 ### ABC sales curve
 
-The ABC sales report appears at the bottom of the monitoring page and analyzes the rolling 30 days through the time of the query. It paginates through orders, filters to payment-completed orders (`payStatus = 2`), and ranks products by line-item revenue. Class A covers approximately the first 80% of cumulative revenue, B through approximately 95%, and C the remainder; the product that crosses a threshold completes that class. Items without enough product or revenue data are excluded and reported in the status. A Pareto chart follows the detailed table, with bars for product revenue and a cumulative-revenue line. The report refreshes every five minutes or on demand.
+The ABC sales report appears at the bottom of the monitoring page and analyzes the rolling 30 days through the time of the query. It paginates through orders, filters to payment-completed orders (`payStatus = 2`), and ranks products by line-item revenue. The table includes each product's barcode, looked up from device stock channels by product ID or an unambiguous product name. Class A covers approximately the first 80% of cumulative revenue, B through approximately 95%, and C the remainder; the product that crosses a threshold completes that class. Items without enough product or revenue data are excluded and reported in the status. A Pareto chart follows the detailed table, with bars for product revenue and a cumulative-revenue line. The report refreshes every five minutes or on demand.
 
 ### Product catalog
 

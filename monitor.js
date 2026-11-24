@@ -890,14 +890,26 @@ function getAbcItemRevenue(item, quantity) {
 }
 
 function normalizeAbcProductName(value) {
-  return String(value || "").trim().toLocaleLowerCase("pt-BR");
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("pt-BR");
 }
 
 function createAbcBarcodeIndex() {
-  return { byId: new Map(), byName: new Map(), ambiguousNames: new Set() };
+  return {
+    byId: new Map(),
+    byName: new Map(),
+    ambiguousIds: new Set(),
+    ambiguousNames: new Set(),
+    failedDeviceCount: 0,
+    firstDeviceError: ""
+  };
 }
 
-function addAbcProductBarcode(index, record) {
+function addAbcInventoryBarcode(index, record) {
   if (!record || typeof record !== "object" || Array.isArray(record)) return;
   const nestedProduct = record.product && typeof record.product === "object" ? record.product : {};
   const barcodeValue = record.barcode ?? record.barCode ?? record.ean ??
@@ -905,14 +917,29 @@ function addAbcProductBarcode(index, record) {
   if (barcodeValue === null || barcodeValue === undefined || !String(barcodeValue).trim()) return;
 
   const barcode = String(barcodeValue).trim();
-  for (const productId of [record.id, record.productId, record.goodsId, nestedProduct.id]) {
-    if (productId !== undefined && productId !== null && String(productId).trim()) {
-      index.byId.set(String(productId), barcode);
+  for (const productId of [
+    record.productId,
+    record.goodsId,
+    record.goodId,
+    nestedProduct.id,
+    nestedProduct.productId,
+    nestedProduct.goodsId,
+    nestedProduct.goodId
+  ]) {
+    if (productId === undefined || productId === null || !String(productId).trim()) continue;
+    const id = String(productId);
+    if (index.ambiguousIds.has(id)) continue;
+    const existingBarcode = index.byId.get(id);
+    if (existingBarcode && existingBarcode !== barcode) {
+      index.byId.delete(id);
+      index.ambiguousIds.add(id);
+    } else {
+      index.byId.set(id, barcode);
     }
   }
 
   const productName = normalizeAbcProductName(
-    record.name ?? record.productName ?? record.goodsName ?? nestedProduct.name
+    record.productName ?? record.goodsName ?? nestedProduct.name
   );
   if (!productName || index.ambiguousNames.has(productName)) return;
   const existingBarcode = index.byName.get(productName);
@@ -927,22 +954,29 @@ function addAbcProductBarcode(index, record) {
 async function loadAbcProductBarcodeIndex() {
   if (abcProductBarcodeIndex) return abcProductBarcodeIndex;
 
-  const tool = getTool("products");
+  const devicesTool = getTool("devices");
+  const inventoryTool = getTool("inventory");
   const barcodeIndex = createAbcBarcodeIndex();
   const pageSize = 50;
+  const deviceIds = new Set();
   for (let pageNo = 1; ; pageNo += 1) {
     const { response, payload } = await callApi(
-      tool,
+      devicesTool,
       { pageNo, pageSize },
-      tool.body
+      devicesTool.body
     );
     const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
     if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
-      throw new Error(payload?.msg || payload?.message || `Falha ao consultar produtos (HTTP ${response.status}, página ${pageNo}).`);
+      throw new Error(payload?.msg || payload?.message || `Falha ao consultar dispositivos (HTTP ${response.status}, página ${pageNo}).`);
     }
 
     const records = extractRecords(payload);
-    records.forEach((record) => addAbcProductBarcode(barcodeIndex, record));
+    for (const record of records) {
+      const deviceId = record.id ?? record.deviceUuid;
+      if (deviceId !== undefined && deviceId !== null && String(deviceId).trim()) {
+        deviceIds.add(String(deviceId));
+      }
+    }
     const totalCount = findRecordTotalCount(payload);
     if (records.length === 0 ||
       (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
@@ -950,7 +984,23 @@ async function loadAbcProductBarcodeIndex() {
       break;
     }
     if (pageNo >= 1000) {
-      throw new Error("A consulta de produtos para os barcodes ultrapassou 1.000 páginas.");
+      throw new Error("A consulta de dispositivos para os barcodes ultrapassou 1.000 páginas.");
+    }
+  }
+
+  for (const deviceId of deviceIds) {
+    try {
+      const { response, payload } = await callApi(inventoryTool, { deviceId }, inventoryTool.body);
+      const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+      if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+        throw new Error(payload?.msg || payload?.message || `Falha ao consultar estoque (HTTP ${response.status}).`);
+      }
+      findInventoryRecords(payload).forEach((record) => addAbcInventoryBarcode(barcodeIndex, record));
+    } catch (error) {
+      barcodeIndex.failedDeviceCount += 1;
+      if (!barcodeIndex.firstDeviceError) {
+        barcodeIndex.firstDeviceError = error.message || "Erro desconhecido.";
+      }
     }
   }
 
@@ -981,7 +1031,15 @@ function aggregateAbcProducts(orders, startTime, endTime, barcodeIndex) {
       }
 
       const nestedProduct = item.product && typeof item.product === "object" ? item.product : {};
-      const productId = item.productId ?? item.goodsId ?? nestedProduct.id;
+      const productIds = [
+        item.productId,
+        item.goodsId,
+        nestedProduct.id,
+        nestedProduct.productId,
+        nestedProduct.goodsId
+      ]
+        .filter((value) => value !== undefined && value !== null && String(value).trim());
+      const productId = productIds[0];
       const productName = item.productName || item.goodsName || nestedProduct.name || item.name || item.title;
       const normalizedName = normalizeAbcProductName(productName);
       const barcodeValue = [
@@ -991,7 +1049,7 @@ function aggregateAbcProducts(orders, startTime, endTime, barcodeIndex) {
         nestedProduct.barcode,
         nestedProduct.barCode,
         nestedProduct.ean,
-        productId === undefined || productId === null ? "" : barcodeIndex.byId.get(String(productId)),
+        ...productIds.map((id) => barcodeIndex.byId.get(String(id))),
         normalizedName ? barcodeIndex.byName.get(normalizedName) : ""
       ].find((value) => value !== null && value !== undefined && String(value).trim());
       if ((productId === undefined || productId === null || String(productId).trim() === "") &&
@@ -1270,6 +1328,7 @@ async function refreshAbcReport() {
     let barcodeIndex;
     let barcodeLookupError = "";
     try {
+      setStatus(abcStatus, "Consultando os estoques dos dispositivos para localizar os barcodes...");
       barcodeIndex = await loadAbcProductBarcodeIndex();
     } catch (error) {
       barcodeIndex = createAbcBarcodeIndex();
@@ -1283,10 +1342,15 @@ async function refreshAbcReport() {
       : "";
     const missingBarcodeCount = summary.products.filter((product) => !product.barcode).length;
     const barcodeStatus = barcodeLookupError
-      ? ` Não foi possível consultar os barcodes do cadastro de produtos: ${barcodeLookupError}`
-      : missingBarcodeCount
-        ? ` Barcode não localizado no cadastro para ${missingBarcodeCount.toLocaleString("pt-BR")} produto(s).`
-        : "";
+      ? ` Não foi possível consultar os barcodes do estoque: ${barcodeLookupError}`
+      : [
+          barcodeIndex.failedDeviceCount
+            ? ` Não foi possível consultar o estoque de ${barcodeIndex.failedDeviceCount.toLocaleString("pt-BR")} máquina(s): ${barcodeIndex.firstDeviceError}`
+            : "",
+          missingBarcodeCount
+            ? ` Barcode não localizado no estoque para ${missingBarcodeCount.toLocaleString("pt-BR")} produto(s).`
+            : ""
+        ].join("");
     setStatus(
       abcStatus,
       `Período: ${formatGmtMinus3Date(startTime)} a ${formatGmtMinus3Date(endTime)} (GMT−3). Classificação por faturamento; os itens que cruzam cada limite permanecem na classe que completa a faixa.${skippedLabel}${barcodeStatus}`,
