@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const { logEvent } = require("./event-log");
 
 const HOST = "127.0.0.1";
 const PORT = Number(process.env.PORT || 8000);
@@ -140,6 +141,7 @@ async function authenticate(request, response) {
 
   if ((request.headers["content-length"] && Number(request.headers["content-length"]) > 0) ||
       request.headers["transfer-encoding"]) {
+    await logEvent("authentication.rejected", { reason: "request_body_not_allowed" });
     sendJson(response, 400, { message: "Authentication credentials are server-managed." }, origin);
     request.resume();
     return;
@@ -149,6 +151,7 @@ async function authenticate(request, response) {
   const appKey = process.env.FEIGE_APP_KEY;
   const appSecret = process.env.FEIGE_APP_SECRET;
   if (!appKey || !appSecret) {
+    await logEvent("authentication.failed", { reason: "credentials_not_configured" });
     sendJson(response, 500, { message: "Server credentials are not configured." }, origin);
     return;
   }
@@ -162,17 +165,23 @@ async function authenticate(request, response) {
     });
     const responseBody = await upstreamResponse.text();
     if (Buffer.byteLength(responseBody, "utf8") > 1024 * 1024) {
+      await logEvent("authentication.response_rejected", {
+        reason: "response_too_large",
+        status: upstreamResponse.status
+      });
       sendJson(response, 502, { message: "Authentication server returned an oversized response." }, origin);
       return;
     }
 
+    await logEvent("authentication.response", { status: upstreamResponse.status });
     response.writeHead(upstreamResponse.status, {
       "Content-Type": upstreamResponse.headers.get("content-type") || "application/json; charset=utf-8",
       "Cache-Control": "no-store",
       ...getCorsHeaders(origin)
     });
     response.end(responseBody);
-  } catch {
+  } catch (error) {
+    await logEvent("authentication.error", { error: error.name || "Error" });
     sendJson(response, 502, { message: "Could not reach the authentication server." }, origin);
   }
 }
@@ -243,6 +252,7 @@ async function proxyApiRequest(request, response) {
     }
   }
 
+  const startedAt = Date.now();
   try {
     const upstreamResponse = await fetch(targetUrl, {
       method,
@@ -256,10 +266,23 @@ async function proxyApiRequest(request, response) {
     });
     const responseBody = await upstreamResponse.text();
     if (Buffer.byteLength(responseBody, "utf8") > 2 * 1024 * 1024) {
+      await logEvent("api.response_rejected", {
+        method,
+        path: targetUrl.pathname,
+        reason: "response_too_large",
+        status: upstreamResponse.status,
+        durationMs: Date.now() - startedAt
+      });
       sendJson(response, 502, { message: "API returned an oversized response." }, origin);
       return;
     }
 
+    await logEvent("api.response", {
+      method,
+      path: targetUrl.pathname,
+      status: upstreamResponse.status,
+      durationMs: Date.now() - startedAt
+    });
     response.writeHead(upstreamResponse.status, {
       "Content-Type": upstreamResponse.headers.get("content-type") || "application/json; charset=utf-8",
       "Cache-Control": "no-store",
@@ -272,6 +295,12 @@ async function proxyApiRequest(request, response) {
       error?.cause?.name === "TimeoutError" ||
       errorCode === "UND_ERR_CONNECT_TIMEOUT" ||
       errorCode === "ETIMEDOUT";
+    await logEvent("api.error", {
+      method,
+      path: targetUrl.pathname,
+      error: errorCode || error?.name || "UnknownError",
+      durationMs: Date.now() - startedAt
+    });
     console.error("[api/proxy] Feige request failed", {
       method,
       path: targetUrl.pathname,
@@ -405,4 +434,5 @@ const server = http.createServer(async (request, response) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`Feige API Tester available at http://${HOST}:${PORT}`);
+  logEvent("application.started", { host: HOST, port: PORT });
 });

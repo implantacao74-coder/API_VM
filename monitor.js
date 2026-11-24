@@ -55,10 +55,10 @@ const API_TOOLS = [
     group: "Produtos",
     id: "products",
     label: "Listar produtos",
-    method: "POST",
+    method: "GET",
     path: "/api/luobo-machine-api/api/v1/productCategory/listPrivate",
-    query: { pageNo: 1, pageSize: 50 },
-    body: { name: "" },
+    query: { pageNo: 1, pageSize: 50, name: "" },
+    body: null,
     description: "Lista produtos com paginação. O filtro name é opcional."
   },
   {
@@ -307,6 +307,7 @@ let salesRefreshTimer;
 let abcRefreshTimer;
 let lastSalesRefreshAt;
 let isLoadingAbc = false;
+let abcProductBarcodeIndex;
 let devicePage = 1;
 const devicePageSize = 50;
 const SALES_TIME_ZONE = "Etc/GMT+3";
@@ -657,7 +658,7 @@ function addCalendarDays(value, days) {
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
-function findOrderTotalCount(payload) {
+function findRecordTotalCount(payload) {
   let current = payload;
   for (let depth = 0; depth < 5; depth += 1) {
     if (!current || typeof current !== "object") break;
@@ -888,7 +889,76 @@ function getAbcItemRevenue(item, quantity) {
   return getSaleItemAmount(item, quantity);
 }
 
-function aggregateAbcProducts(orders, startTime, endTime) {
+function normalizeAbcProductName(value) {
+  return String(value || "").trim().toLocaleLowerCase("pt-BR");
+}
+
+function createAbcBarcodeIndex() {
+  return { byId: new Map(), byName: new Map(), ambiguousNames: new Set() };
+}
+
+function addAbcProductBarcode(index, record) {
+  if (!record || typeof record !== "object" || Array.isArray(record)) return;
+  const nestedProduct = record.product && typeof record.product === "object" ? record.product : {};
+  const barcodeValue = record.barcode ?? record.barCode ?? record.ean ??
+    nestedProduct.barcode ?? nestedProduct.barCode ?? nestedProduct.ean;
+  if (barcodeValue === null || barcodeValue === undefined || !String(barcodeValue).trim()) return;
+
+  const barcode = String(barcodeValue).trim();
+  for (const productId of [record.id, record.productId, record.goodsId, nestedProduct.id]) {
+    if (productId !== undefined && productId !== null && String(productId).trim()) {
+      index.byId.set(String(productId), barcode);
+    }
+  }
+
+  const productName = normalizeAbcProductName(
+    record.name ?? record.productName ?? record.goodsName ?? nestedProduct.name
+  );
+  if (!productName || index.ambiguousNames.has(productName)) return;
+  const existingBarcode = index.byName.get(productName);
+  if (existingBarcode && existingBarcode !== barcode) {
+    index.byName.delete(productName);
+    index.ambiguousNames.add(productName);
+  } else {
+    index.byName.set(productName, barcode);
+  }
+}
+
+async function loadAbcProductBarcodeIndex() {
+  if (abcProductBarcodeIndex) return abcProductBarcodeIndex;
+
+  const tool = getTool("products");
+  const barcodeIndex = createAbcBarcodeIndex();
+  const pageSize = 50;
+  for (let pageNo = 1; ; pageNo += 1) {
+    const { response, payload } = await callApi(
+      tool,
+      { pageNo, pageSize },
+      tool.body
+    );
+    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+    if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+      throw new Error(payload?.msg || payload?.message || `Falha ao consultar produtos (HTTP ${response.status}, página ${pageNo}).`);
+    }
+
+    const records = extractRecords(payload);
+    records.forEach((record) => addAbcProductBarcode(barcodeIndex, record));
+    const totalCount = findRecordTotalCount(payload);
+    if (records.length === 0 ||
+      (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
+      (totalCount === undefined && records.length < pageSize)) {
+      break;
+    }
+    if (pageNo >= 1000) {
+      throw new Error("A consulta de produtos para os barcodes ultrapassou 1.000 páginas.");
+    }
+  }
+
+  abcProductBarcodeIndex = barcodeIndex;
+  return abcProductBarcodeIndex;
+}
+
+function aggregateAbcProducts(orders, startTime, endTime, barcodeIndex) {
   const products = new Map();
   let paidOrderCount = 0;
   let skippedItemCount = 0;
@@ -913,6 +983,17 @@ function aggregateAbcProducts(orders, startTime, endTime) {
       const nestedProduct = item.product && typeof item.product === "object" ? item.product : {};
       const productId = item.productId ?? item.goodsId ?? nestedProduct.id;
       const productName = item.productName || item.goodsName || nestedProduct.name || item.name || item.title;
+      const normalizedName = normalizeAbcProductName(productName);
+      const barcodeValue = [
+        item.barcode,
+        item.barCode,
+        item.ean,
+        nestedProduct.barcode,
+        nestedProduct.barCode,
+        nestedProduct.ean,
+        productId === undefined || productId === null ? "" : barcodeIndex.byId.get(String(productId)),
+        normalizedName ? barcodeIndex.byName.get(normalizedName) : ""
+      ].find((value) => value !== null && value !== undefined && String(value).trim());
       if ((productId === undefined || productId === null || String(productId).trim() === "") &&
           (typeof productName !== "string" || !productName.trim())) {
         skippedItemCount += 1;
@@ -933,10 +1014,14 @@ function aggregateAbcProducts(orders, startTime, endTime) {
         name: typeof productName === "string" && productName.trim()
           ? productName.trim()
           : `Produto ${productId}`,
+        barcode: "",
         quantity: 0,
         quantityComplete: true,
         revenue: 0
       };
+      if (!product.barcode && barcodeValue !== undefined) {
+        product.barcode = String(barcodeValue).trim();
+      }
       if (quantity === null) {
         product.quantityComplete = false;
       } else {
@@ -982,7 +1067,7 @@ function renderAbcReport(summary) {
   const table = createResultElement("table", "result-table abc-table");
   const head = document.createElement("thead");
   const headerRow = document.createElement("tr");
-  for (const label of ["Produto", "Quantidade vendida", "Faturamento", "% do faturamento", "% acumulado", "Classe"]) {
+  for (const label of ["Produto", "BARCODE", "Quantidade vendida", "Faturamento", "% do faturamento", "% acumulado", "Classe"]) {
     headerRow.appendChild(createResultElement("th", "", label));
   }
   head.appendChild(headerRow);
@@ -993,6 +1078,7 @@ function renderAbcReport(summary) {
     const row = document.createElement("tr");
     const values = [
       product.name,
+      product.barcode || "—",
       product.quantityComplete ? product.quantity.toLocaleString("pt-BR") : "—",
       formatSaleAmount(product.revenue),
       `${(product.share * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`,
@@ -1170,7 +1256,7 @@ async function refreshAbcReport() {
 
       const records = extractRecords(payload);
       orders.push(...records);
-      const totalCount = findOrderTotalCount(payload);
+      const totalCount = findRecordTotalCount(payload);
       if (records.length === 0 ||
         (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
         (totalCount === undefined && records.length < pageSize)) {
@@ -1181,15 +1267,30 @@ async function refreshAbcReport() {
       }
     }
 
-    const summary = aggregateAbcProducts(orders, startTime, endTime);
+    let barcodeIndex;
+    let barcodeLookupError = "";
+    try {
+      barcodeIndex = await loadAbcProductBarcodeIndex();
+    } catch (error) {
+      barcodeIndex = createAbcBarcodeIndex();
+      barcodeLookupError = error.message || "Erro desconhecido.";
+    }
+
+    const summary = aggregateAbcProducts(orders, startTime, endTime, barcodeIndex);
     renderAbcReport(summary);
     const skippedLabel = summary.skippedItemCount || summary.skippedOrderCount
       ? ` ${summary.skippedItemCount.toLocaleString("pt-BR")} item(ns) e ${summary.skippedOrderCount.toLocaleString("pt-BR")} pedido(s) sem detalhes suficientes foram desconsiderados.`
       : "";
+    const missingBarcodeCount = summary.products.filter((product) => !product.barcode).length;
+    const barcodeStatus = barcodeLookupError
+      ? ` Não foi possível consultar os barcodes do cadastro de produtos: ${barcodeLookupError}`
+      : missingBarcodeCount
+        ? ` Barcode não localizado no cadastro para ${missingBarcodeCount.toLocaleString("pt-BR")} produto(s).`
+        : "";
     setStatus(
       abcStatus,
-      `Período: ${formatGmtMinus3Date(startTime)} a ${formatGmtMinus3Date(endTime)} (GMT−3). Classificação por faturamento; os itens que cruzam cada limite permanecem na classe que completa a faixa.${skippedLabel}`,
-      "success"
+      `Período: ${formatGmtMinus3Date(startTime)} a ${formatGmtMinus3Date(endTime)} (GMT−3). Classificação por faturamento; os itens que cruzam cada limite permanecem na classe que completa a faixa.${skippedLabel}${barcodeStatus}`,
+      barcodeStatus ? "warning" : "success"
     );
   } catch (error) {
     abcReport.replaceChildren(createResultElement("p", "result-message error", `Não foi possível gerar a curva ABC: ${error.message}`));
@@ -1256,7 +1357,7 @@ async function refreshSalesReport() {
 
       const records = extractRecords(payload);
       periodOrders.push(...records);
-      const totalCount = findOrderTotalCount(payload);
+      const totalCount = findRecordTotalCount(payload);
       if (records.length === 0 ||
         (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
         (totalCount === undefined && records.length < pageSize)) {
@@ -1501,6 +1602,7 @@ function renderVendChannels(records) {
     details.className = "dispense-channel-details";
     details.appendChild(createResultElement("strong", "", record.productName || record.categoryName || `Canal ${channelNumber}`));
     details.appendChild(createResultElement("span", "", `Canal ${channelNumber} · Estoque: ${formatInventoryCount(record.currentInventoryCount)}`));
+    details.appendChild(createResultElement("span", "", `Barcode: ${record.barcode ?? "—"}`));
     if (checkbox.disabled) {
       details.appendChild(createResultElement("span", "dispense-channel-warning", "ID do canal não retornado pela API"));
     }

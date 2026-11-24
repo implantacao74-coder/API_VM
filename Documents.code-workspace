@@ -3,5 +3,13 @@
 		{
 			"path": ".."
 		}
-	]
+	],
+	"settings": {
+		"liveServer.settings.ignoreFiles": [
+			".vscode/**",
+			"**/.git/**",
+			"**/node_modules/**",
+			"**/logs/**"
+		]
+	}
 }

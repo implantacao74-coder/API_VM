@@ -490,13 +490,13 @@ function Get-ApiRequestDefinition {
       $query = @{ id = Read-RequiredValue "ID da tarefa de teste" }
     }
     "6" {
+      $method = "GET"
       $path = "$apiBasePath/api/v1/productCategory/listPrivate"
       $pageNo = Read-IntegerValue "Página" 1
       $pageSize = Read-IntegerValue "Itens por página" 50
       $query = @{ pageNo = $pageNo; pageSize = $pageSize }
-      $body = @{}
       $name = Read-OptionalValue "Nome do produto (opcional)"
-      if ($name) { $body.name = $name }
+      if ($name) { $query.name = $name }
     }
     "7" {
       $path = "$apiBasePath/api/v1/freeTier/vend"

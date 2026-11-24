@@ -52,6 +52,7 @@ To start the backend and open the application automatically:
 ```
 
 The script checks whether the backend is already running. If needed, it starts the Node.js backend in the background, waits for it to respond, and opens <http://127.0.0.1:8000>. Startup output is saved to `logs\backend.log` and `logs\backend-error.log`.
+Application events are written as plain text to `logs\app-events.txt`. The log records authentication outcomes and API request paths, methods, status codes, and durations; it does not record tokens or request/response bodies. When it reaches 100 MiB, the logger truncates the previous contents and keeps a truncation marker with the newest event.
 
 To start only the backend:
 
@@ -300,13 +301,13 @@ The result entries contain `vendorResult`, `vendorResultText`, and `inventoryId`
 
 #### List products
 
-`POST /api/v1/productCategory/listPrivate`
+`GET /api/v1/productCategory/listPrivate`
 
 | Field | Location | Type | Required | Description |
 |---|---|---|---|---|
 | `pageNo` | Query | Integer | Yes | Page number |
 | `pageSize` | Query | Integer | Yes | Page size |
-| `name` | JSON body | String | No | Product-name search |
+| `name` | Query | String | No | Product-name search |
 
 Product fields include `id`, `name`, `imageUrl`, `costPrice`, `price`, `productCategoryId`, and `productCategoryName`.
 
