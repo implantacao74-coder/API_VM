@@ -1,179 +1,179 @@
-# Feige API Tester
+# Testador da API Feige
 
-Browser-based tools for authenticating with the Feige API, sending requests, monitoring vending machines, and running connectivity diagnostics.
+Ferramentas no navegador para autenticar na API Feige, enviar requisições, monitorar máquinas de venda automática e executar diagnósticos de conectividade.
 
 > [!NOTE]
-> The local backend uses built-in modules from Node.js 18 or newer. No package installation is required.
+> O backend local usa módulos nativos do Node.js 18 ou superior. Não é necessário instalar pacotes.
 
-## Contents
+## Conteúdo
 
-- [Quick start](#quick-start)
-- [Web application](#web-application)
-- [Interactive terminal tester](#interactive-terminal-tester)
-- [Monitoring page](#monitoring-page)
-- [Diagnostics](#diagnostics)
-- [Vending System API reference](#vending-system-api-reference)
-  - [Authentication](#authentication)
-  - [Devices and inventory](#devices-and-inventory)
-  - [Products](#products)
-  - [Device control](#device-control)
-  - [Orders](#orders)
-  - [Coupons](#coupons)
-  - [API callback](#api-callback)
+- [Início rápido](#início-rápido)
+- [Aplicativo web](#aplicativo-web)
+- [Testador interativo no terminal](#testador-interativo-no-terminal)
+- [Página de monitoração](#página-de-monitoração)
+- [Diagnósticos](#diagnósticos)
+- [Referência da API do sistema Vending](#referência-da-api-do-sistema-vending)
+  - [Autenticação](#autenticação)
+  - [Dispositivos e estoque](#dispositivos-e-estoque)
+  - [Produtos](#produtos)
+  - [Controle de dispositivos](#controle-de-dispositivos)
+  - [Pedidos](#pedidos)
+  - [Cupons](#cupons)
+  - [Callback da API](#callback-da-api)
 
-## Quick start
+## Início rápido
 
-### Requirements
+### Requisitos
 
 - Windows PowerShell
-- Node.js 18 or newer
-- Feige API App Key and App Secret
+- Node.js 18 ou superior
+- Chave da API Feige e segredo do aplicativo
 
-### Configure credentials
+### Configurar as credenciais
 
-Run the setup script and enter the App Key and App Secret when prompted:
+Execute o script de configuração e informe a chave e o segredo do aplicativo quando solicitado:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\setup-credentials.ps1
 ```
 
-The execution-policy change applies only to the current PowerShell process. It is not saved to the machine or user profile.
+A alteração da política de execução se aplica somente ao processo atual do PowerShell. Ela não é salva na máquina nem no perfil do usuário.
 
 > [!WARNING]
-> `credentials.json` stores credentials as plain text. The file is excluded from Git, but anyone with access to it can read the credentials. If it already exists, the setup script asks for confirmation before replacing it.
+> O arquivo `credentials.json` armazena as credenciais em texto simples. Ele é excluído do Git, mas qualquer pessoa com acesso ao arquivo pode lê-las. Se o arquivo já existir, o script de configuração solicitará confirmação antes de substituí-lo.
 
-### Start the application
+### Iniciar o aplicativo
 
-To start the backend and open the application automatically:
+Para iniciar o backend e abrir o aplicativo automaticamente:
 
 ```powershell
 .\open-tester.ps1
 ```
 
-The script checks whether the backend is already running. If needed, it starts the Node.js backend in the background, waits for it to respond, and opens <http://127.0.0.1:8000>. Startup output is saved to `logs\backend.log` and `logs\backend-error.log`.
-Application events are written as plain text to `logs\app-events.txt`. The log records authentication outcomes and API request paths, methods, status codes, and durations; it does not record tokens or request/response bodies. When it reaches 100 MiB, the logger truncates the previous contents and keeps a truncation marker with the newest event.
+O script verifica se o backend já está em execução. Se necessário, inicia o backend Node.js em segundo plano, aguarda uma resposta e abre <http://127.0.0.1:8000>. A saída da inicialização é salva em `logs\backend.log` e `logs\backend-error.log`.
+Os eventos do aplicativo são gravados como texto simples em `logs\app-events.txt`. O registro inclui resultados da autenticação e caminhos, métodos, códigos de status e duração das requisições à API; tokens e corpos de requisição/resposta não são registrados. Ao atingir 100 MiB, o registrador trunca o conteúdo anterior e mantém um marcador de truncamento junto do evento mais recente.
 
-To start only the backend:
+Para iniciar somente o backend:
 
 ```powershell
 .\start.ps1
 ```
 
-## Web application
+## Aplicativo web
 
-The application authenticates through the local backend on port `8000`. Only supported local origins are accepted; network-accessible origins and other ports are intentionally rejected.
+O aplicativo autentica por meio do backend local na porta `8000`. Somente origens locais compatíveis são aceitas; origens acessíveis pela rede e outras portas são rejeitadas intencionalmente.
 
-- Authentication endpoint: `https://veda.figeth.com/api/auth/apply`
-- Protected API base URL: `https://veda.figeth.com/api/luobo-machine-api`
-- Product catalog: open `products.html` to browse the inventory spreadsheet with product photos matched by product code.
-- Credentials are read by the backend and are not sent to or stored in the browser.
-- The access token stays in the current browser session and is removed when that session ends.
-- API requests pass through the local backend to avoid browser CORS restrictions.
+- Endpoint de autenticação: `https://veda.figeth.com/api/auth/apply`
+- URL base da API protegida: `https://veda.figeth.com/api/luobo-machine-api`
+- Catálogo de produtos: abra `products.html` para consultar a planilha de estoque, com fotos associadas pelo código do produto.
+- As credenciais são lidas pelo backend e não são enviadas nem armazenadas no navegador.
+- O token de acesso permanece na sessão atual do navegador e é removido quando ela termina.
+- As requisições à API passam pelo backend local para contornar as restrições de CORS do navegador.
 
-After authenticating, load a Postman collection by pasting its JSON, selecting a JSON file, or choosing **Collection Feige**. Review imported requests before sending them, especially requests that change data or control equipment.
+Depois de autenticar, carregue uma coleção do Postman colando o JSON, selecionando um arquivo JSON ou escolhendo **Collection Feige**. Revise as requisições importadas antes de enviá-las, especialmente as que alteram dados ou controlam equipamentos.
 
-After a request completes, select **Visualizar em HTML** to open a formatted response. The viewer reads the latest result from the current browser session and redacts sensitive fields such as tokens and secrets.
+Depois que uma requisição for concluída, selecione **Visualizar em HTML** para abrir a resposta formatada. O visualizador lê o resultado mais recente da sessão atual do navegador e oculta campos confidenciais, como tokens e segredos.
 
-### Start the backend from the browser
+### Iniciar o backend pelo navegador
 
-To let the **Autenticar e abrir sessão** button start the backend when it is not already running, install the Windows protocol handler once:
+Para permitir que o botão **Autenticar e abrir sessão** inicie o backend quando ele ainda não estiver em execução, instale uma vez o manipulador de protocolo do Windows:
 
 ```powershell
 .\install-protocol.ps1
 ```
 
-When authentication is clicked while the backend is stopped, the browser asks permission to open the Feige API Tester. Allow it; the backend starts in the background and the page retries authentication. No PowerShell window remains open. This also works with VS Code Live Server at <http://127.0.0.1:5500>.
+Quando você clicar em autenticar com o backend parado, o navegador solicitará permissão para abrir o Testador da API Feige. Autorize: o backend será iniciado em segundo plano e a página tentará autenticar novamente. Nenhuma janela do PowerShell ficará aberta. Esse recurso também funciona com o Live Server do VS Code em <http://127.0.0.1:5500>.
 
-To remove the protocol handler:
+Para remover o manipulador de protocolo:
 
 ```powershell
 .\uninstall-protocol.ps1
 ```
 
-## Interactive terminal tester
+## Testador interativo no terminal
 
-Run the terminal tester from PowerShell:
+Execute o testador de terminal pelo PowerShell:
 
 ```powershell
 .\api-terminal-test.ps1
 ```
 
-The script authenticates with `credentials.json` and prompts for the parameters required by the selected operation. It includes the built-in monitoring and test operations, plus a custom-call option limited to the Feige API path.
+O script autentica usando `credentials.json` e solicita os parâmetros necessários para a operação selecionada. Ele inclui operações integradas de monitoração e teste, além de uma opção de chamada personalizada limitada aos caminhos da API Feige.
 
-Responses are shown as readable labels and records, with the HTTP status displayed separately. They are not dumped as JSON. Tokens and secret fields are hidden.
+As respostas são exibidas com rótulos e registros legíveis, e o status HTTP é mostrado separadamente. O JSON bruto não é exibido. Tokens e campos secretos são ocultados.
 
 > [!WARNING]
-> Stock changes, coupon creation, channel tests, product dispensing, and cabinet-door controls require typing `EXECUTAR` before sending. Physical operations may activate equipment. Use only with devices and accounts you are authorized to operate.
+> Alterações de estoque, criação de cupons, testes de canais, dispensação de produtos e controles das portas dos armários exigem que você digite `EXECUTAR` antes do envio. Operações físicas podem acionar equipamentos. Use somente dispositivos e contas que você tenha autorização para operar.
 
-For coupon generation, enter device and product IDs or explicitly type `TODOS` to apply the selected scope to all devices or products.
+Para gerar cupons, informe os IDs dos dispositivos e produtos ou digite explicitamente `TODOS` para aplicar o escopo selecionado a todos os dispositivos ou produtos.
 
-API requests from this script are sent directly to `https://veda.figeth.com`.
+As requisições à API feitas por esse script são enviadas diretamente para `https://veda.figeth.com`.
 
-## Monitoring page
+## Página de monitoração
 
-Open `monitor.html` from the same origin after authenticating. The page includes device status and refresh controls, inventory, products, dispensing, cabinet doors, orders, and coupons.
+Depois de autenticar, abra `monitor.html` na mesma origem. A página inclui status dos dispositivos e controles de atualização, estoque, produtos, dispensação, portas dos armários, pedidos e cupons.
 
-### Replenishment report
+### Relatório de reposição
 
-At the top of the monitoring page, select a machine to generate a per-channel replenishment report. It shows each product's barcode, maximum quantity (`capacity`, falling back to `totalInventoryCount`), current quantity, and number needed to refill each channel. The needed quantity is `max(0, maximum - current)`; missing quantities are displayed as unavailable. The low-stock alarm checks all devices and lists channels with a registered product and 0–5 units available; it runs on page load, every five minutes, or when **Verificar todas as máquinas** is selected. If an inventory lookup fails, the status reports that the scan was incomplete. Use **Atualizar relatório** to query the selected machine again. **Imprimir / salvar PDF** opens the browser's print dialog; choose **Save as PDF** (or the equivalent option in your browser) to create the PDF. The print layout contains only the selected machine's report and details.
+Na parte superior da página de monitoração, selecione uma máquina para gerar um relatório de reposição por canal. Ele mostra o código de barras de cada produto, a quantidade máxima (`capacity`, usando `totalInventoryCount` como alternativa), a quantidade atual e quantas unidades faltam para completar cada canal. A quantidade necessária é `max(0, máximo - atual)`; quantidades ausentes são exibidas como indisponíveis. O alarme de estoque baixo verifica todos os dispositivos e lista os canais com produto cadastrado e de 0 a 5 unidades disponíveis. A verificação é executada ao carregar a página, a cada cinco minutos ou ao selecionar **Verificar todas as máquinas**. Se a consulta de estoque falhar, o status informa que a verificação foi incompleta. Use **Atualizar relatório** para consultar novamente a máquina selecionada. **Imprimir / salvar PDF** abre a caixa de impressão do navegador; escolha **Salvar como PDF** (ou a opção equivalente) para criar o arquivo. O layout de impressão contém somente o relatório e os detalhes da máquina selecionada.
 
-### Product dispensing
+### Dispensação de produtos
 
-The first panel guides the physical dispensing operation:
+O primeiro painel orienta a operação de dispensação física:
 
-1. Select a device.
-2. Load its listed stock channels.
-3. Select one or more channels.
-4. Confirm the operation before sending it.
+1. Selecione um dispositivo.
+2. Carregue os canais de estoque cadastrados nele.
+3. Selecione um ou mais canais.
+4. Confirme a operação antes de enviá-la.
 
-The response includes the dispensing task ID, which can be used to query its result.
+A resposta inclui o ID da tarefa de dispensação, que pode ser usado para consultar o resultado.
 
-### Sales report
+### Relatório de vendas
 
-The report shows the 10 most recent orders without a date filter and a separate, paginated list for the selected inclusive date range. The default range is the last 24 hours.
+O relatório mostra os 10 pedidos mais recentes sem filtro de data e, separadamente, uma lista paginada para o período selecionado, incluindo as datas inicial e final. O período padrão é de 24 horas.
 
-- Select **Buscar período** to apply the date range.
-- The report refreshes automatically every five minutes.
-- Select **Atualizar agora** to refresh both sections immediately.
-- Timestamps without an explicit time zone are interpreted as China Standard Time (UTC+8) and displayed in fixed GMT-3. Timestamps with an explicit offset are converted from that offset.
-- Orders without a valid payment time are omitted from period results and reported in the status.
+- Selecione **Buscar período** para aplicar o intervalo de datas.
+- O relatório é atualizado automaticamente a cada cinco minutos.
+- Selecione **Atualizar agora** para atualizar ambas as seções imediatamente.
+- Horários sem fuso explícito são interpretados como horário padrão da China (UTC+8) e exibidos no fuso fixo GMT−3. Horários com deslocamento explícito são convertidos a partir desse fuso.
+- Pedidos sem horário de pagamento válido são omitidos dos resultados do período, e essa informação é exibida no status.
 
-### ABC sales curve
+### Curva ABC de vendas
 
-The ABC sales report near the bottom of the monitoring page analyzes the rolling 30 days through the time of the query. It paginates through orders, filters to payment-completed orders (`payStatus = 2`), and ranks products by line-item revenue. The table includes each product's barcode, looked up from device stock channels by product ID or an unambiguous product name. Class A covers approximately the first 80% of cumulative revenue, B through approximately 95%, and C the remainder; the product that crosses a threshold completes that class. Items without enough product or revenue data are excluded and reported in the status. A Pareto chart follows the detailed table, with bars for product revenue and a cumulative-revenue line. The report refreshes every five minutes or on demand.
+O relatório de vendas pela Curva ABC, próximo à parte inferior da página de monitoração, analisa os últimos 30 dias até o momento da consulta. Ele percorre as páginas de pedidos, considera os pedidos com pagamento concluído (`payStatus = 2`) e classifica os produtos pela receita de cada item. A tabela inclui o código de barras de cada produto, localizado nos canais de estoque dos dispositivos pelo ID do produto ou por um nome sem ambiguidades. A classe A representa aproximadamente os primeiros 80% da receita acumulada; a B vai até cerca de 95%; e a C corresponde ao restante. O produto que ultrapassa um limite completa a classe correspondente. Itens sem dados suficientes de produto ou receita são excluídos e informados no status. Depois da tabela detalhada, um gráfico de Pareto exibe barras de receita por produto e uma linha de receita acumulada. O relatório é atualizado a cada cinco minutos ou sob demanda.
 
-After the ABC report, the purchase-attempt monitor lists all orders returned for the last 30 days, regardless of `payStatus`. It refreshes every five minutes or on demand. The Feige manual documents `2` as successful and `3` as refunded; confirm the meaning of other status codes with Feige. Attempts that do not create an order are not visible through this list-orders endpoint.
+Depois do relatório ABC, o monitor de tentativas de compra lista todos os pedidos retornados nos últimos 30 dias, independentemente do `payStatus`. A lista é atualizada a cada cinco minutos ou sob demanda. O manual da Feige define `2` como pagamento concluído e `3` como reembolsado; confirme com a Feige o significado dos demais códigos de status. Tentativas que não geram um pedido não ficam visíveis no endpoint de listagem de pedidos.
 
-### Product catalog
+### Catálogo de produtos
 
-Open `products.html` to search products from `Fotos Vending Machine\relatorio-estoque-por-local-2026-11-17-1109 (1).xlsx` by code, name, or variation and filter by stock location. The catalog displays only variations with a matched photo or video. Use the selector beside **Lista de produtos** to sort in descending order by sale price, stock quantity, or estimated value. The catalog shows color, size, variation, sale price, estimated stock value, and quantity by location; its summary includes the total estimated value of products with matched photos. Image and video files are matched by the product code at the beginning of their filename. **Baixar relatório de produtos sem foto** exports every product without a matched image. **Baixar relatório de produtos com foto e/ou vídeo** exports products with at least one matched photo or video, with separate columns containing absolute links to each media type. Both buttons download UTF-8 CSV spreadsheets with product details and stock quantities by location that open in Excel. The generated `products.json` contains the consolidated spreadsheet and media paths. Product media links are served only from the `Fotos Vending Machine` directory and only for supported image and MP4 types.
+Abra `products.html` para pesquisar por código, nome ou variação os produtos da planilha `Fotos Vending Machine\relatorio-estoque-por-local-2026-11-17-1109 (1).xlsx` e filtrar por local de estoque. O catálogo exibe somente variações associadas a uma foto ou vídeo. Use o seletor ao lado de **Lista de produtos** para ordenar de forma decrescente por preço de venda, quantidade em estoque ou valor estimado. O catálogo mostra cor, tamanho, variação, preço de venda, valor estimado do estoque e quantidade por local; o resumo inclui o valor estimado total dos produtos que têm fotos correspondentes. Os arquivos de imagem e vídeo são associados pelo código do produto no início do nome do arquivo. **Baixar relatório de produtos sem foto** exporta todos os produtos sem imagem correspondente. **Baixar relatório de produtos com foto e/ou vídeo** exporta os produtos com pelo menos uma foto ou vídeo correspondente, em colunas separadas com links absolutos para cada tipo de mídia. Ambos os botões baixam planilhas CSV em UTF-8 com detalhes dos produtos e quantidades em estoque por local, compatíveis com o Excel. O arquivo `products.json` gerado contém os dados consolidados da planilha e os caminhos das mídias. Os links de mídia são servidos somente a partir do diretório `Fotos Vending Machine` e apenas para os formatos de imagem e MP4 compatíveis.
 
-### Equipment tests and inventory
+### Testes de equipamento e estoque
 
-Open `monitor-tests.html` or select **Testes** in the monitoring navigation to test product channels and query a test task's result. Testing channels may activate the equipment and requires explicit confirmation.
+Abra `monitor-tests.html` ou selecione **Testes** na navegação da página de monitoração para testar canais de produtos e consultar o resultado de uma tarefa de teste. Os testes podem acionar o equipamento e exigem confirmação explícita.
 
-Select **Estoque** beside a device to open a visual inventory view with listed channels, available units, capacity, and stock-level bars. The response JSON is not shown.
+Selecione **Estoque** ao lado de um dispositivo para abrir uma visualização do estoque com canais cadastrados, unidades disponíveis, capacidade e barras de nível de estoque. O JSON da resposta não é exibido.
 
 > [!IMPORTANT]
-> Stock changes, dispensing, door controls, and coupon generation require explicit confirmation. The callback integration is inbound server-to-server; it is not an operation initiated by the monitoring page.
+> Alterações de estoque, dispensação, controles de portas e geração de cupons exigem confirmação explícita. A integração de callback é recebida por comunicação servidor a servidor; ela não é uma operação iniciada pela página de monitoração.
 
-## Diagnostics
+## Diagnósticos
 
-### Authentication diagnostic
+### Diagnóstico de autenticação
 
-The authentication diagnostic uses `curl.exe` from PowerShell rather than the browser. It allows direct inspection of the HTTP status and API response without browser-enforced CORS.
+O diagnóstico de autenticação usa `curl.exe` pelo PowerShell, em vez do navegador. Isso permite inspecionar diretamente o status HTTP e a resposta da API, sem as restrições de CORS aplicadas pelo navegador.
 
-Run it with:
+Execute-o com:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\auth-test.ps1
 ```
 
-The script reads the same `credentials.json` file as the backend. Credentials are sent in the JSON body of `POST https://veda.figeth.com/api/auth/apply`, not in curl's command-line arguments. Before the request, the script sends an `OPTIONS` preflight using the configured origin and records the status and CORS headers.
+O script lê o mesmo arquivo `credentials.json` usado pelo backend. As credenciais são enviadas no corpo JSON de `POST https://veda.figeth.com/api/auth/apply`, e não nos argumentos de linha de comando do curl. Antes da requisição, o script envia uma solicitação de preflight `OPTIONS` usando a origem configurada e registra o status e os cabeçalhos CORS.
 
-To use a different URL, origin, or log path:
+Para usar outra URL, origem ou caminho de log:
 
 ```powershell
 .\auth-test.ps1 `
@@ -182,53 +182,53 @@ To use a different URL, origin, or log path:
   -LogPath ".\logs\auth-test.jsonl"
 ```
 
-The JSONL log is written to `logs\auth-test.jsonl`. Log field names and script-generated error messages are in English. Each entry includes the `curlCommands.preflight` and `curlCommands.authentication` commands used for the test. The authentication command's body is redacted; replace the placeholders locally to replay it.
+O log JSONL é gravado em `logs\auth-test.jsonl`. Os nomes dos campos do log e as mensagens de erro geradas pelo script permanecem em inglês. Cada entrada inclui os comandos `curlCommands.preflight` e `curlCommands.authentication` usados no teste. O corpo do comando de autenticação é ocultado; substitua os marcadores localmente para reproduzi-lo.
 
-Secrets, keys, and tokens are redacted. The token is never printed or saved; the log only reports whether it was received. The API response body is preserved for diagnosis and may contain text in the language returned by the API.
+Segredos, chaves e tokens são ocultados. O token nunca é exibido nem salvo; o log informa somente se ele foi recebido. O corpo da resposta da API é preservado para diagnóstico e pode conter texto no idioma retornado pela API.
 
-Exit codes:
+Códigos de saída:
 
-| Code | Meaning |
+| Código | Significado |
 |---:|---|
-| `0` | Authentication and preflight succeeded |
-| `1` | curl transport failure |
-| `2` | Unsuccessful HTTP response or missing token |
-| `3` | The API did not allow the preflight for the requested origin |
+| `0` | Autenticação e preflight concluídos com sucesso |
+| `1` | Falha de transporte do curl |
+| `2` | Resposta HTTP malsucedida ou token ausente |
+| `3` | A API não autorizou o preflight para a origem solicitada |
 
-### JSONPlaceholder connectivity test
+### Teste de conectividade com JSONPlaceholder
 
-Use this test to check `curl.exe` independently from the Feige API:
+Use este teste para verificar o `curl.exe` independentemente da API Feige:
 
 ```powershell
 .\jsonplaceholder-test.ps1
 ```
 
-The script sends `GET /posts/1` (expects HTTP `200`) and `POST /posts` (expects HTTP `201`) to `https://jsonplaceholder.typicode.com`. Results are appended in English to `logs\jsonplaceholder-test.jsonl`. Each log entry includes a PowerShell-ready `curlCommand` that reproduces the request. No Feige credentials are used.
+O script envia `GET /posts/1` (espera HTTP `200`) e `POST /posts` (espera HTTP `201`) para `https://jsonplaceholder.typicode.com`. Os resultados são acrescentados em inglês a `logs\jsonplaceholder-test.jsonl`. Cada entrada do log inclui um `curlCommand` pronto para o PowerShell que reproduz a requisição. Nenhuma credencial Feige é usada.
 
-### CORS limitation
+### Limitação de CORS
 
-`curl.exe` does not enforce CORS. The explicit preflight lets you inspect the server's `OPTIONS` response, but only a browser enforces CORS policy. Successful authentication confirms connectivity and the API's HTTP behavior; the log separately records whether the preflight response has the expected headers for the requested origin.
+O `curl.exe` não aplica as regras de CORS. O preflight explícito permite inspecionar a resposta `OPTIONS` do servidor, mas somente o navegador aplica a política de CORS. Uma autenticação bem-sucedida confirma a conectividade e o comportamento HTTP da API; o log também registra se a resposta do preflight contém os cabeçalhos esperados para a origem solicitada.
 
-## Vending System API reference
+## Referência da API do sistema Vending
 
-### Authentication
+### Autenticação
 
-This reference was transcribed from `Vending_System_API_Documentation_EN (2).docx` (version `1.21`).
+Esta referência foi transcrita de `Vending_System_API_Documentation_EN (2).docx` (versão `1.21`).
 
-Replace `https://xxx.xxx.xxx` with the API host and append `/prod-api` when required by your deployment. Unless otherwise stated, protected endpoints require the access token obtained from `POST /auth/apply` in the `Authorization` request header.
+Substitua `https://xxx.xxx.xxx` pelo host da API e acrescente `/prod-api` quando necessário na sua implantação. Salvo indicação em contrário, as rotas protegidas exigem o token de acesso obtido por `POST /auth/apply`, enviado no cabeçalho `Authorization` da requisição.
 
-Create an AppKey and AppSecret in the administration console under **Personal Information > Developer Configuration**.
+Crie um AppKey e um AppSecret no console de administração, em **Informações pessoais > Configuração do desenvolvedor**.
 
-#### Obtain an authentication token
+#### Obter um token de autenticação
 
-`POST /auth/apply` (does not require a token)
+`POST /auth/apply` (não exige token)
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `appKey` | JSON body | String | Yes | Application key |
-| `appSecret` | JSON body | String | Yes | Application secret |
+| `appKey` | Corpo JSON | Texto | Sim | Chave do aplicativo |
+| `appSecret` | Corpo JSON | Texto | Sim | Segredo do aplicativo |
 
-Example response:
+Exemplo de resposta:
 
 ```json
 {
@@ -241,211 +241,211 @@ Example response:
 }
 ```
 
-`expires_in` is the token lifetime in minutes.
+`expires_in` é o tempo de validade do token, em minutos.
 
-### Devices and inventory
+### Dispositivos e estoque
 
-#### List devices
+#### Listar dispositivos
 
 `POST /api/v1/device/list`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `pageNo` | Query | Integer | Yes | Page number |
-| `pageSize` | Query | Integer | Yes | Page size |
-| `deviceName` | JSON body | String | No | Device-name search keyword |
-| `status` | JSON body | Integer | No | `1` = online; `2` = offline |
+| `pageNo` | Consulta | Inteiro | Sim | Número da página |
+| `pageSize` | Consulta | Inteiro | Sim | Quantidade de itens por página |
+| `deviceName` | Corpo JSON | Texto | Não | Palavra-chave para pesquisar o nome do dispositivo |
+| `status` | Corpo JSON | Inteiro | Não | `1` = online; `2` = offline |
 
-The response contains a paginated `result.records` list. Device fields documented by the API include `id`, `deviceUuid`, `deviceName`, `language`, `sim`, `strength4g`, `strengthWifi`, `status`, `deviceVersion`, and `timeZoneId`.
+A resposta contém a lista paginada `result.records`. Os campos de dispositivo documentados pela API incluem `id`, `deviceUuid`, `deviceName`, `language`, `sim`, `strength4g`, `strengthWifi`, `status`, `deviceVersion` e `timeZoneId`.
 
-#### List device inventory
+#### Listar o estoque de um dispositivo
 
 `POST /api/v1/deviceInventory/list`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | Query | Long | Yes | Device ID |
+| `deviceId` | Consulta | Inteiro longo | Sim | ID do dispositivo |
 
-The response contains `result.cargoPassageList`. Inventory fields include `id` (inventory ID), `categoryLevel` (`1` = parent, `2` = subcategory), `productCategoryId`, `categoryName`, `productId`, `productName`, `boardNo`, `cargoPassageId`, `cargoPassageNo`, `totalInventoryCount`, `currentInventoryCount`, and `status` (`1` = delisted, `2` = listed).
+A resposta contém `result.cargoPassageList`. Os campos de estoque incluem `id` (ID do estoque), `categoryLevel` (`1` = categoria principal, `2` = subcategoria), `productCategoryId`, `categoryName`, `productId`, `productName`, `boardNo`, `cargoPassageId`, `cargoPassageNo`, `totalInventoryCount`, `currentInventoryCount` e `status` (`1` = desativado, `2` = ativo).
 
-#### Replenish inventory
+#### Repor estoque
 
 `POST /api/v1/deviceInventory/replenish`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `infoList` | JSON body | Array | Yes | Inventory count updates |
-| `infoList[].inventoryId` | JSON body | String | Yes | Inventory ID |
-| `infoList[].count` | JSON body | Integer | Yes | Inventory count after stocktaking |
+| `infoList` | Corpo JSON | Lista | Sim | Atualizações das quantidades de estoque |
+| `infoList[].inventoryId` | Corpo JSON | Texto | Sim | ID do estoque |
+| `infoList[].count` | Corpo JSON | Inteiro | Sim | Quantidade em estoque após a contagem física |
 
-#### Test product channels
+#### Testar canais de produtos
 
 `POST /api/v1/deviceInventory/testChannel`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | JSON body | String | Yes | Device ID |
-| `ids` | JSON body | String array | Yes | Inventory IDs to test |
+| `deviceId` | Corpo JSON | Texto | Sim | ID do dispositivo |
+| `ids` | Corpo JSON | Lista de textos | Sim | IDs dos estoques a testar |
 
-The response `result` is the test task ID.
+A resposta `result` contém o ID da tarefa de teste.
 
-#### Get product-channel test results
+#### Consultar resultados do teste de canais
 
 `GET /api/v1/deviceInventory/getTestResult`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `id` | Query | String | Yes | Test task ID |
+| `id` | Consulta | Texto | Sim | ID da tarefa de teste |
 
-The result entries contain `vendorResult`, `vendorResultText`, and `inventoryId`.
+As entradas do resultado contêm `vendorResult`, `vendorResultText` e `inventoryId`.
 
-### Products
+### Produtos
 
-#### List products
+#### Listar produtos
 
 `GET /api/v1/productCategory/listPrivate`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `pageNo` | Query | Integer | Yes | Page number |
-| `pageSize` | Query | Integer | Yes | Page size |
-| `name` | Query | String | No | Product-name search |
+| `pageNo` | Consulta | Inteiro | Sim | Número da página |
+| `pageSize` | Consulta | Inteiro | Sim | Quantidade de itens por página |
+| `name` | Consulta | Texto | Não | Pesquisa pelo nome do produto |
 
-Product fields include `id`, `name`, `imageUrl`, `costPrice`, `price`, `productCategoryId`, and `productCategoryName`.
+Os campos do produto incluem `id`, `name`, `imageUrl`, `costPrice`, `price`, `productCategoryId` e `productCategoryName`.
 
-### Device control
+### Controle de dispositivos
 
-#### Dispense from product channels
+#### Dispensar produtos pelos canais
 
 `POST /api/v1/freeTier/vend`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | JSON body | String | Yes | Device ID |
-| `cargoPassageIds` | JSON body | List of strings | Yes | Product-channel IDs |
+| `deviceId` | Corpo JSON | Texto | Sim | ID do dispositivo |
+| `cargoPassageIds` | Corpo JSON | Lista de textos | Sim | IDs dos canais de produtos |
 
-The response `result` is the dispensing task ID.
+A resposta `result` contém o ID da tarefa de dispensação.
 
-#### Get dispensing results
+#### Consultar resultados da dispensação
 
 `GET /api/v1/freeTier/getVendorResult`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `vendorId` | Query | String | Yes | Dispensing task ID |
+| `vendorId` | Consulta | Texto | Sim | ID da tarefa de dispensação |
 
-The result entries contain `vendorResult`, `vendorResultText`, and `cargoPassageId`.
+As entradas do resultado contêm `vendorResult`, `vendorResultText` e `cargoPassageId`.
 
-#### Open smart cabinet door
+#### Abrir a porta do armário inteligente
 
 `POST /api/v1/control/openDoor`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | JSON body | String | Yes | Device ID |
-| `delayClose` | JSON body | Integer | No | Open delay in milliseconds; defaults to 3 seconds |
+| `deviceId` | Corpo JSON | Texto | Sim | ID do dispositivo |
+| `delayClose` | Corpo JSON | Inteiro | Não | Tempo até fechar, em milissegundos; o padrão é 3 segundos |
 
-The response contains `testId`, the task ID.
+A resposta contém `testId`, o ID da tarefa.
 
-#### Close smart cabinet door
+#### Fechar a porta do armário inteligente
 
 `POST /api/v1/control/closeDoor`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | JSON body | String | Yes | Device ID |
+| `deviceId` | Corpo JSON | Texto | Sim | ID do dispositivo |
 
-The response contains `testId`, the task ID.
+A resposta contém `testId`, o ID da tarefa.
 
-#### Query smart cabinet door status
+#### Consultar o estado da porta do armário inteligente
 
 `POST /api/v1/control/queryDoorStatus`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `deviceId` | JSON body | String | Yes | Device ID |
+| `deviceId` | Corpo JSON | Texto | Sim | ID do dispositivo |
 
-The response contains `mainOpen` and `subOpen`: `0` = closed, `1` = open.
+A resposta contém `mainOpen` e `subOpen`: `0` = fechada; `1` = aberta.
 
-### Orders
+### Pedidos
 
-#### List orders
+#### Listar pedidos
 
 `POST /api/v1/order/list`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `pageNo` | Query | Integer | Yes | Page number |
-| `pageSize` | Query | Integer | Yes | Page size |
-| `device` | JSON body | String | No | Device UUID or device name |
-| `orderNo` | JSON body | String | No | Order number |
-| `createTimeStart` | JSON body | Date | No | Payment start time; defaults to today |
-| `createTimeEnd` | JSON body | Date | No | Payment end time; defaults to today |
+| `pageNo` | Consulta | Inteiro | Sim | Número da página |
+| `pageSize` | Consulta | Inteiro | Sim | Quantidade de itens por página |
+| `device` | Corpo JSON | Texto | Não | UUID ou nome do dispositivo |
+| `orderNo` | Corpo JSON | Texto | Não | Número do pedido |
+| `createTimeStart` | Corpo JSON | Data | Não | Data inicial do pagamento; o padrão é hoje |
+| `createTimeEnd` | Corpo JSON | Data | Não | Data final do pagamento; o padrão é hoje |
 
-The JSON body is required; send `{}` when no filters are specified.
+O corpo JSON é obrigatório; envie `{}` quando nenhum filtro for especificado.
 
-Order records include `orderNo`, `orderItemList`, `payTime`, `payStatus`, `refundTime`, and `returnMoney`. The manual documents `payStatus` as `2` = successful and `3` = refunded. Each `orderItemList` entry may include `takeStatus`, the dispensing result.
+Os registros de pedidos incluem `orderNo`, `orderItemList`, `payTime`, `payStatus`, `refundTime` e `returnMoney`. O manual define `payStatus` como `2` = pagamento concluído e `3` = reembolsado. Cada entrada de `orderItemList` pode incluir `takeStatus`, o resultado da dispensação.
 
-### Coupons
+### Cupons
 
-#### Generate coupon codes
+#### Gerar códigos de cupom
 
 `POST /api/v1/coupon/generate`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `name` | JSON body | String | Yes | Coupon name |
-| `detail` | JSON body | String | No | Coupon details |
-| `remark` | JSON body | String | No | Coupon remarks |
-| `type` | JSON body | Integer | Yes | `1` minimum-spend discount; `2` minimum-spend gift; `3` percentage discount; `4` cash voucher; `5` redemption voucher |
-| `rule` | JSON body | String | Yes | Rule details; defaults to `"{}"` |
-| `deviceIds` | JSON body | List of longs | No | Device IDs; omitted means all devices |
-| `productIds` | JSON body | List of longs | No | Product IDs; omitted means all products |
-| `startDate` | JSON body | String | Yes | Start date (`YYYY-MM-dd`) |
-| `endDate` | JSON body | String | Yes | End date (`YYYY-MM-dd`) |
-| `startTime` | JSON body | String | Yes | Start time (`HH:mm:ss`) |
-| `endTime` | JSON body | String | Yes | End time (`HH:mm:ss`) |
-| `quantity` | JSON body | Integer | Yes | Number of codes to generate (`1`–`100`) |
+| `name` | Corpo JSON | Texto | Sim | Nome do cupom |
+| `detail` | Corpo JSON | Texto | Não | Detalhes do cupom |
+| `remark` | Corpo JSON | Texto | Não | Observações do cupom |
+| `type` | Corpo JSON | Inteiro | Sim | `1` desconto por valor mínimo; `2` brinde por valor mínimo; `3` desconto percentual; `4` vale em dinheiro; `5` vale-resgate |
+| `rule` | Corpo JSON | Texto | Sim | Detalhes da regra; o padrão é `"{}"` |
+| `deviceIds` | Corpo JSON | Lista de inteiros longos | Não | IDs dos dispositivos; se omitido, aplica-se a todos |
+| `productIds` | Corpo JSON | Lista de inteiros longos | Não | IDs dos produtos; se omitido, aplica-se a todos |
+| `startDate` | Corpo JSON | Texto | Sim | Data inicial (`YYYY-MM-dd`) |
+| `endDate` | Corpo JSON | Texto | Sim | Data final (`YYYY-MM-dd`) |
+| `startTime` | Corpo JSON | Texto | Sim | Horário inicial (`HH:mm:ss`) |
+| `endTime` | Corpo JSON | Texto | Sim | Horário final (`HH:mm:ss`) |
+| `quantity` | Corpo JSON | Inteiro | Sim | Quantidade de códigos a gerar (`1`–`100`) |
 
-The response `result` contains the generated coupon codes.
+A resposta `result` contém os códigos de cupom gerados.
 
-#### List coupons
+#### Listar cupons
 
 `POST /api/v1/coupon/list`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `pageNo` | Query | Integer | Yes | Page number |
-| `pageSize` | Query | Integer | Yes | Page size |
-| `status` | JSON body | Integer | No | Usage status: `1` = unused, `2` = used |
+| `pageNo` | Consulta | Inteiro | Sim | Número da página |
+| `pageSize` | Consulta | Inteiro | Sim | Quantidade de itens por página |
+| `status` | Corpo JSON | Inteiro | Não | Estado de uso: `1` = não utilizado; `2` = utilizado |
 
-#### Find coupon by code
+#### Localizar cupom pelo código
 
 `GET /api/v1/coupon/getByCode`
 
-| Field | Location | Type | Required | Description |
+| Campo | Local | Tipo | Obrigatório | Descrição |
 |---|---|---|---|---|
-| `code` | Query | String | Yes | Coupon code |
+| `code` | Consulta | Texto | Sim | Código do cupom |
 
-### API callback
+### Callback da API
 
-The API sends an HTTP `POST` with `Content-Type: application/json` to the callback URL configured by the caller. The payload includes:
+A API envia uma requisição HTTP `POST` com `Content-Type: application/json` para a URL de callback configurada pelo solicitante. O conteúdo inclui:
 
-| Field | Description |
+| Campo | Descrição |
 |---|---|
-| `type` | `0` = test; `1` = order notification |
-| `timestamp` | Timestamp used for signing |
-| `nonce` | Random string |
-| `data` | Original business data, encoded as a JSON string |
-| `dataHash` | Lowercase hexadecimal MD5 digest of `data` |
-| `sign` | Base64-encoded signature |
+| `type` | `0` = teste; `1` = notificação de pedido |
+| `timestamp` | Data e hora usadas na assinatura |
+| `nonce` | Texto aleatório |
+| `data` | Dados comerciais originais, codificados como uma string JSON |
+| `dataHash` | Hash MD5 de `data`, em hexadecimal minúsculo |
+| `sign` | Assinatura codificada em Base64 |
 
-Verify the signature with the public key. The manual specifies signing the fields excluding `sign`, concatenated in ascending key-name order as `k=v&...`, using `MD5withRSA`, then Base64-encoding the signature.
+Verifique a assinatura usando a chave pública. O manual especifica que os campos, exceto `sign`, sejam concatenados em ordem crescente pelo nome da chave no formato `k=v&...`, assinados com `MD5withRSA` e então codificados em Base64.
 
-Example signing string:
+Exemplo da string usada na assinatura:
 
 ```text
 dataHash=e99a18c428cb38d5f260853678922e03&nonce=b1fc0c3eabc34f1f9a2d3f4c5e6a7b8c&timestamp=1686580000000&type=1
 ```
 
-If verification fails, log the failure and optionally return a non-200 HTTP status or a signed error response. The manual says the error response signature must use the same private key.
+Se a verificação falhar, registre a falha e, opcionalmente, retorne um status HTTP diferente de 200 ou uma resposta de erro assinada. O manual determina que a assinatura da resposta de erro use a mesma chave privada.
