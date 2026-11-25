@@ -264,6 +264,50 @@
   border-color: rgba(83, 106, 69, 0.38);
 }
 
+.stock-alarm-panel {
+  margin: 18px 0;
+  border: 1px solid rgba(166, 112, 38, 0.45);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fffaf0;
+}
+
+.stock-alarm-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stock-alarm-heading h3 {
+  margin: 0;
+}
+
+.stock-alarm-heading p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.stock-alarm-heading button {
+  width: auto;
+  min-height: 44px;
+  flex: 0 0 auto;
+  padding: 9px 14px;
+}
+
+.stock-alarm-table {
+  min-width: 700px;
+}
+
+.stock-alarm-row {
+  background: #fff4dc;
+}
+
+.stock-alarm-row td:last-child {
+  color: #8a5d19;
+  font-weight: 750;
+}
+
 .replenishment-select-row {
   display: flex;
   align-items: flex-end;
@@ -448,8 +492,20 @@
   border-color: rgba(83, 106, 69, 0.38);
 }
 
+.purchase-attempts-panel {
+  border-color: rgba(72, 43, 91, 0.24);
+}
+
 .abc-summary {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.purchase-attempts-summary {
+  grid-template-columns: minmax(220px, 360px);
+}
+
+.purchase-attempts-table {
+  min-width: 760px;
 }
 
 .abc-table {
@@ -1311,6 +1367,14 @@
     width: 100%;
   }
 
+  .stock-alarm-heading {
+    flex-direction: column;
+  }
+
+  .stock-alarm-heading button {
+    width: 100%;
+  }
+
   .sales-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1554,7 +1618,8 @@
 
   .replenishment-panel .monitor-section-heading p:not(.monitor-eyebrow),
   .replenishment-select-row,
-  #replenishmentStatus {
+  #replenishmentStatus,
+  .stock-alarm-panel {
     display: none !important;
   }
 

@@ -39,6 +39,19 @@
               <p>Selecione uma máquina para consultar a quantidade máxima, o estoque atual por mola/canaleta e quanto falta para completar cada canal.</p>
             </div>
           </div>
+          <section class="stock-alarm-panel" aria-labelledby="stockAlarmTitle">
+            <div class="stock-alarm-heading">
+              <div>
+                <h3 id="stockAlarmTitle">Alarme de estoque baixo</h3>
+                <p>Máquinas com produto cadastrado e até 5 unidades disponíveis em alguma canaleta.</p>
+              </div>
+              <button id="refreshStockAlarmBtn" class="secondary" type="button">Verificar todas as máquinas</button>
+            </div>
+            <p id="stockAlarmStatus" class="monitor-status" role="status">Aguardando verificação.</p>
+            <div id="stockAlarmResults" class="monitor-table-wrap" aria-live="polite">
+              <p class="result-placeholder">Os alarmes serão exibidos aqui.</p>
+            </div>
+          </section>
           <div class="replenishment-select-row">
             <label for="replenishmentDeviceSelect">Máquina (nome / ID)
               <select id="replenishmentDeviceSelect" disabled>
@@ -282,6 +295,27 @@
               <p class="result-placeholder">O gráfico será exibido após a consulta.</p>
             </div>
           </section>
+        </section>
+
+        <section class="monitor-panel purchase-attempts-panel" aria-labelledby="purchaseAttemptsTitle">
+          <div class="monitor-section-heading">
+            <div>
+              <p class="monitor-eyebrow">ACOMPANHAMENTO DE PEDIDOS</p>
+              <h2 id="purchaseAttemptsTitle">Todas as tentativas de compra · últimos 30 dias</h2>
+              <p>Pedidos retornados pela API nos últimos 30 dias, independentemente do status. A Feige documenta 2 como pagamento concluído e 3 como reembolsado; o significado dos demais códigos deve ser confirmado. Tentativas que não geram pedido não aparecem nesta lista.</p>
+            </div>
+            <button id="refreshPurchaseAttemptsBtn" class="secondary sales-refresh" type="button">Atualizar tentativas</button>
+          </div>
+          <p id="purchaseAttemptsStatus" class="monitor-status" role="status">Aguardando autenticação.</p>
+          <div class="sales-summary purchase-attempts-summary" aria-label="Resumo das tentativas de compra">
+            <article class="sales-summary-card">
+              <span>Pedidos retornados</span>
+              <strong id="purchaseAttemptsCount">—</strong>
+            </article>
+          </div>
+          <div id="purchaseAttemptsList" class="result-table-wrap" aria-live="polite">
+            <p class="result-placeholder">As tentativas aparecerão aqui após a consulta.</p>
+          </div>
         </section>
       </div>
 

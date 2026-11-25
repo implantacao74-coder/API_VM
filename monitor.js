@@ -244,6 +244,9 @@ const toolOutput = document.getElementById("toolOutput");
 const replenishmentDeviceSelect = document.getElementById("replenishmentDeviceSelect");
 const refreshReplenishmentBtn = document.getElementById("refreshReplenishmentBtn");
 const printReplenishmentBtn = document.getElementById("printReplenishmentBtn");
+const refreshStockAlarmBtn = document.getElementById("refreshStockAlarmBtn");
+const stockAlarmStatus = document.getElementById("stockAlarmStatus");
+const stockAlarmResults = document.getElementById("stockAlarmResults");
 const replenishmentStatus = document.getElementById("replenishmentStatus");
 const replenishmentMachineDetails = document.getElementById("replenishmentMachineDetails");
 const replenishmentReport = document.getElementById("replenishmentReport");
@@ -274,6 +277,10 @@ const abcRevenueTotal = document.getElementById("abcRevenueTotal");
 const abcProductCount = document.getElementById("abcProductCount");
 const abcReport = document.getElementById("abcReport");
 const abcChart = document.getElementById("abcChart");
+const refreshPurchaseAttemptsBtn = document.getElementById("refreshPurchaseAttemptsBtn");
+const purchaseAttemptsStatus = document.getElementById("purchaseAttemptsStatus");
+const purchaseAttemptsCount = document.getElementById("purchaseAttemptsCount");
+const purchaseAttemptsList = document.getElementById("purchaseAttemptsList");
 const deviceRows = document.getElementById("deviceRows");
 const deviceStatus = document.getElementById("deviceStatus");
 const refreshDevicesBtn = document.getElementById("refreshDevicesBtn");
@@ -305,9 +312,15 @@ let isDispensing = false;
 let isLoadingSales = false;
 let salesRefreshTimer;
 let abcRefreshTimer;
+let purchaseAttemptsRefreshTimer;
+let stockAlarmRefreshTimer;
 let lastSalesRefreshAt;
 let isLoadingAbc = false;
+let isLoadingPurchaseAttempts = false;
+let isLoadingStockAlarms = false;
 let abcProductBarcodeIndex;
+let abcProductBarcodeIndexPromise;
+let abcInventorySnapshot = [];
 let devicePage = 1;
 const devicePageSize = 50;
 const SALES_TIME_ZONE = "Etc/GMT+3";
@@ -951,61 +964,76 @@ function addAbcInventoryBarcode(index, record) {
   }
 }
 
-async function loadAbcProductBarcodeIndex() {
-  if (abcProductBarcodeIndex) return abcProductBarcodeIndex;
+async function loadAbcProductBarcodeIndex(forceRefresh = false) {
+  if (abcProductBarcodeIndexPromise) return abcProductBarcodeIndexPromise;
+  if (abcProductBarcodeIndex && !forceRefresh) return abcProductBarcodeIndex;
 
-  const devicesTool = getTool("devices");
-  const inventoryTool = getTool("inventory");
-  const barcodeIndex = createAbcBarcodeIndex();
-  const pageSize = 50;
-  const deviceIds = new Set();
-  for (let pageNo = 1; ; pageNo += 1) {
-    const { response, payload } = await callApi(
-      devicesTool,
-      { pageNo, pageSize },
-      devicesTool.body
-    );
-    const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
-    if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
-      throw new Error(payload?.msg || payload?.message || `Falha ao consultar dispositivos (HTTP ${response.status}, página ${pageNo}).`);
-    }
-
-    const records = extractRecords(payload);
-    for (const record of records) {
-      const deviceId = record.id ?? record.deviceUuid;
-      if (deviceId !== undefined && deviceId !== null && String(deviceId).trim()) {
-        deviceIds.add(String(deviceId));
-      }
-    }
-    const totalCount = findRecordTotalCount(payload);
-    if (records.length === 0 ||
-      (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
-      (totalCount === undefined && records.length < pageSize)) {
-      break;
-    }
-    if (pageNo >= 1000) {
-      throw new Error("A consulta de dispositivos para os barcodes ultrapassou 1.000 páginas.");
-    }
-  }
-
-  for (const deviceId of deviceIds) {
-    try {
-      const { response, payload } = await callApi(inventoryTool, { deviceId }, inventoryTool.body);
+  abcProductBarcodeIndexPromise = (async () => {
+    const devicesTool = getTool("devices");
+    const inventoryTool = getTool("inventory");
+    const barcodeIndex = createAbcBarcodeIndex();
+    const pageSize = 50;
+    const devices = new Map();
+    const inventorySnapshot = [];
+    for (let pageNo = 1; ; pageNo += 1) {
+      const { response, payload } = await callApi(
+        devicesTool,
+        { pageNo, pageSize },
+        devicesTool.body
+      );
       const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
       if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
-        throw new Error(payload?.msg || payload?.message || `Falha ao consultar estoque (HTTP ${response.status}).`);
+        throw new Error(payload?.msg || payload?.message || `Falha ao consultar dispositivos (HTTP ${response.status}, página ${pageNo}).`);
       }
-      findInventoryRecords(payload).forEach((record) => addAbcInventoryBarcode(barcodeIndex, record));
-    } catch (error) {
-      barcodeIndex.failedDeviceCount += 1;
-      if (!barcodeIndex.firstDeviceError) {
-        barcodeIndex.firstDeviceError = error.message || "Erro desconhecido.";
+
+      const records = extractRecords(payload);
+      for (const device of records) {
+        const deviceId = device.id ?? device.deviceUuid;
+        if (deviceId !== undefined && deviceId !== null && String(deviceId).trim()) {
+          devices.set(String(deviceId), device);
+        }
+      }
+      const totalCount = findRecordTotalCount(payload);
+      if (records.length === 0 ||
+        (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
+        (totalCount === undefined && records.length < pageSize)) {
+        break;
+      }
+      if (pageNo >= 1000) {
+        throw new Error("A consulta de dispositivos para os barcodes ultrapassou 1.000 páginas.");
       }
     }
-  }
 
-  abcProductBarcodeIndex = barcodeIndex;
-  return abcProductBarcodeIndex;
+    for (const [deviceId, device] of devices) {
+      try {
+        const { response, payload } = await callApi(inventoryTool, { deviceId }, inventoryTool.body);
+        const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+        if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+          throw new Error(payload?.msg || payload?.message || `Falha ao consultar estoque (HTTP ${response.status}).`);
+        }
+        const records = findInventoryRecords(payload);
+        records.forEach((record) => {
+          addAbcInventoryBarcode(barcodeIndex, record);
+          inventorySnapshot.push({ device, record });
+        });
+      } catch (error) {
+        barcodeIndex.failedDeviceCount += 1;
+        if (!barcodeIndex.firstDeviceError) {
+          barcodeIndex.firstDeviceError = error.message || "Erro desconhecido.";
+        }
+      }
+    }
+
+    abcProductBarcodeIndex = barcodeIndex;
+    abcInventorySnapshot = inventorySnapshot;
+    return abcProductBarcodeIndex;
+  })();
+
+  try {
+    return await abcProductBarcodeIndexPromise;
+  } finally {
+    abcProductBarcodeIndexPromise = undefined;
+  }
 }
 
 function aggregateAbcProducts(orders, startTime, endTime, barcodeIndex) {
@@ -1362,6 +1390,118 @@ async function refreshAbcReport() {
   } finally {
     isLoadingAbc = false;
     refreshAbcBtn.disabled = false;
+  }
+}
+
+function getPurchaseAttemptDate(order) {
+  return parseSaleDateTime(order?.createTime || order?.payTime || order?.refundTime);
+}
+
+function renderPurchaseAttempts(orders) {
+  purchaseAttemptsCount.textContent = orders.length.toLocaleString("pt-BR");
+  purchaseAttemptsList.replaceChildren();
+  if (orders.length === 0) {
+    purchaseAttemptsList.appendChild(
+      createResultElement("p", "result-empty", "Nenhum pedido foi retornado pela API nos últimos 30 dias.")
+    );
+    return;
+  }
+
+  const table = createResultElement("table", "result-table purchase-attempts-table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["Pedido", "Máquina", "Data/hora", "Valor", "payStatus (API)"]) {
+    headerRow.appendChild(createResultElement("th", "", label));
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  for (const order of orders) {
+    const row = createResultElement("tr", "purchase-attempt-row");
+    const date = getPurchaseAttemptDate(order);
+    const values = [
+      order.orderNo || order.id || "Sem número",
+      getSaleDevice(order),
+      date ? formatGmtMinus3DateTime(date) : "Data não informada",
+      formatSaleAmount(getSaleAmount(order)),
+      order.payStatus === null || order.payStatus === undefined || String(order.payStatus).trim() === ""
+        ? "Não informado"
+        : String(order.payStatus)
+    ];
+    for (const value of values) {
+      row.appendChild(createResultElement("td", "", String(value)));
+    }
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  purchaseAttemptsList.appendChild(table);
+}
+
+async function refreshPurchaseAttempts() {
+  if (isLoadingPurchaseAttempts) return;
+  isLoadingPurchaseAttempts = true;
+  refreshPurchaseAttemptsBtn.disabled = true;
+  purchaseAttemptsCount.textContent = "—";
+  purchaseAttemptsList.replaceChildren(
+    createResultElement("p", "result-placeholder", "Consultando pedidos dos últimos 30 dias...")
+  );
+  setStatus(purchaseAttemptsStatus, "Consultando todas as tentativas de compra dos últimos 30 dias...");
+
+  const endTime = new Date();
+  const startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const queryStart = formatGmtMinus3Date(startTime);
+  const queryEnd = formatGmtMinus3Date(endTime);
+  const pageSize = 200;
+  const orders = [];
+
+  try {
+    const tool = getTool("orders");
+    for (let pageNo = 1; ; pageNo += 1) {
+      const { response, payload } = await callApi(tool, {
+        pageNo,
+        pageSize
+      }, {
+        createTimeStart: queryStart,
+        createTimeEnd: addCalendarDays(queryEnd, 1)
+      });
+      const apiCode = payload && typeof payload === "object" ? Number(payload.code) : undefined;
+      if (!response.ok || (Number.isFinite(apiCode) && apiCode !== 200)) {
+        throw new Error(payload?.msg || payload?.message || `Falha ao consultar pedidos (HTTP ${response.status}, página ${pageNo}).`);
+      }
+
+      const records = extractRecords(payload);
+      orders.push(...records);
+      const totalCount = findRecordTotalCount(payload);
+      if (records.length === 0 ||
+        (totalCount !== undefined && pageNo * pageSize >= totalCount) ||
+        (totalCount === undefined && records.length < pageSize)) {
+        break;
+      }
+      if (pageNo >= 1000) {
+        throw new Error("A consulta de pedidos ultrapassou 1.000 páginas.");
+      }
+    }
+
+    orders.sort((left, right) =>
+      (getPurchaseAttemptDate(right)?.getTime() ?? 0) -
+      (getPurchaseAttemptDate(left)?.getTime() ?? 0)
+    );
+    renderPurchaseAttempts(orders);
+    setStatus(
+      purchaseAttemptsStatus,
+      `${orders.length.toLocaleString("pt-BR")} pedido(s) retornado(s) nos últimos 30 dias. Atualizado às ${formatGmtMinus3DateTime(new Date())}. Os códigos de status além de 2 e 3 precisam ser confirmados com a Feige.`,
+      "success"
+    );
+  } catch (error) {
+    purchaseAttemptsCount.textContent = "—";
+    purchaseAttemptsList.replaceChildren(
+      createResultElement("p", "result-message error", `Não foi possível consultar as tentativas: ${error.message}`)
+    );
+    setStatus(purchaseAttemptsStatus, error.message, "error");
+  } finally {
+    isLoadingPurchaseAttempts = false;
+    refreshPurchaseAttemptsBtn.disabled = false;
   }
 }
 
@@ -1769,9 +1909,133 @@ function formatInventoryCount(value) {
 }
 
 function getInventoryCount(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined ||
+      (typeof value === "string" && !value.trim())) {
+    return null;
+  }
   const count = Number(value);
   return Number.isFinite(count) ? count : null;
+}
+
+function hasRegisteredInventoryProduct(record) {
+  const nestedProduct = record.product && typeof record.product === "object" ? record.product : {};
+  return [
+    record.productId,
+    record.goodsId,
+    record.goodId,
+    record.productName,
+    record.goodsName,
+    nestedProduct.id,
+    nestedProduct.productId,
+    nestedProduct.goodsId,
+    nestedProduct.name
+  ].some((value) => value !== null && value !== undefined && String(value).trim() !== "");
+}
+
+function getLowStockAlarmRecords(snapshot) {
+  const alarms = [];
+  for (const { device, record } of snapshot) {
+    if (!record || typeof record !== "object" || !hasRegisteredInventoryProduct(record)) continue;
+    const channel = [record.cargoPassageNo, record.cargoPassageId]
+      .find((value) => value !== null && value !== undefined && String(value).trim());
+    const currentCount = getInventoryCount(record.currentInventoryCount);
+    if (channel === null || channel === undefined || !String(channel).trim() ||
+        currentCount === null || currentCount < 0 || currentCount > 5) {
+      continue;
+    }
+
+    alarms.push({
+      deviceName: device.deviceName || "Máquina sem nome",
+      deviceId: device.id ?? device.deviceUuid ?? "—",
+      channel,
+      productName: [
+        record.productName,
+        record.goodsName,
+        record.product?.name
+      ].find((value) => value !== null && value !== undefined && String(value).trim())?.toString().trim() ||
+        "Produto cadastrado",
+      currentCount
+    });
+  }
+  return alarms.sort((left, right) =>
+    left.deviceName.localeCompare(right.deviceName, "pt-BR") ||
+    String(left.channel).localeCompare(String(right.channel), "pt-BR", { numeric: true })
+  );
+}
+
+function renderStockAlarmResults(alarms, failedDeviceCount) {
+  stockAlarmResults.replaceChildren();
+  if (alarms.length === 0) {
+    const message = failedDeviceCount
+      ? "Nenhum alarme confirmado nas máquinas consultadas."
+      : "Nenhuma canaleta com produto cadastrado e até 5 unidades disponíveis.";
+    stockAlarmResults.appendChild(createResultElement("p", "result-empty", message));
+    return;
+  }
+
+  const table = createResultElement("table", "result-table stock-alarm-table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["Máquina", "ID", "Canaleta", "Produto", "Disponíveis"]) {
+    headerRow.appendChild(createResultElement("th", "", label));
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  for (const alarm of alarms) {
+    const row = createResultElement("tr", "stock-alarm-row");
+    for (const value of [
+      alarm.deviceName,
+      alarm.deviceId,
+      alarm.channel,
+      alarm.productName,
+      alarm.currentCount.toLocaleString("pt-BR")
+    ]) {
+      row.appendChild(createResultElement("td", "", String(value)));
+    }
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  stockAlarmResults.appendChild(table);
+}
+
+async function refreshStockAlarms(forceRefresh = false) {
+  if (isLoadingStockAlarms) return;
+  isLoadingStockAlarms = true;
+  refreshStockAlarmBtn.disabled = true;
+  stockAlarmResults.replaceChildren(
+    createResultElement("p", "result-placeholder", "Consultando os estoques de todas as máquinas...")
+  );
+  setStatus(stockAlarmStatus, "Verificando canaletas com produto cadastrado e estoque de até 5 unidades...");
+
+  try {
+    const barcodeIndex = await loadAbcProductBarcodeIndex(forceRefresh);
+    const alarms = getLowStockAlarmRecords(abcInventorySnapshot);
+    renderStockAlarmResults(alarms, barcodeIndex.failedDeviceCount);
+    const machineCount = new Set(alarms.map((alarm) => String(alarm.deviceId))).size;
+    const alarmLabel = alarms.length
+      ? `Encontrados ${alarms.length.toLocaleString("pt-BR")} alarme(s) em ${machineCount.toLocaleString("pt-BR")} máquina(s).`
+      : barcodeIndex.failedDeviceCount
+        ? "Nenhum alarme confirmado nas máquinas consultadas."
+        : "Nenhuma canaleta com produto cadastrado e até 5 unidades disponíveis.";
+    const incompleteLabel = barcodeIndex.failedDeviceCount
+      ? ` Não foi possível consultar ${barcodeIndex.failedDeviceCount.toLocaleString("pt-BR")} máquina(s): ${barcodeIndex.firstDeviceError}`
+      : "";
+    setStatus(
+      stockAlarmStatus,
+      `${alarmLabel}${incompleteLabel} A verificação é atualizada automaticamente a cada 5 minutos.`,
+      alarms.length || barcodeIndex.failedDeviceCount ? "warning" : "success"
+    );
+  } catch (error) {
+    stockAlarmResults.replaceChildren(
+      createResultElement("p", "result-message error", `Não foi possível verificar os alarmes: ${error.message}`)
+    );
+    setStatus(stockAlarmStatus, error.message, "error");
+  } finally {
+    isLoadingStockAlarms = false;
+    refreshStockAlarmBtn.disabled = false;
+  }
 }
 
 function renderReplenishmentReport(records) {
@@ -2142,6 +2406,7 @@ async function runTool() {
 toolSelect.addEventListener("change", updateToolForm);
 replenishmentDeviceSelect.addEventListener("change", handleReplenishmentDeviceChange);
 refreshReplenishmentBtn.addEventListener("click", loadReplenishmentReport);
+refreshStockAlarmBtn.addEventListener("click", () => refreshStockAlarms(true));
 printReplenishmentBtn.addEventListener("click", () => {
   if (hasReplenishmentReport) window.print();
 });
@@ -2149,6 +2414,7 @@ runToolBtn.addEventListener("click", runTool);
 refreshSalesBtn.addEventListener("click", refreshSalesReport);
 applySalesPeriodBtn.addEventListener("click", refreshSalesReport);
 refreshAbcBtn.addEventListener("click", refreshAbcReport);
+refreshPurchaseAttemptsBtn.addEventListener("click", refreshPurchaseAttempts);
 vendDeviceSelect.addEventListener("change", () => {
   vendChannelRequestId += 1;
   vendChannelList.replaceChildren(createResultElement("p", "dispense-empty", "Carregue os canais do equipamento selecionado."));
@@ -2208,6 +2474,10 @@ if (!token) {
   refreshDevices();
   refreshSalesReport();
   refreshAbcReport();
+  refreshPurchaseAttempts();
+  refreshStockAlarms();
   salesRefreshTimer = window.setInterval(refreshSalesReport, 5 * 60 * 1000);
   abcRefreshTimer = window.setInterval(refreshAbcReport, 5 * 60 * 1000);
+  purchaseAttemptsRefreshTimer = window.setInterval(refreshPurchaseAttempts, 5 * 60 * 1000);
+  stockAlarmRefreshTimer = window.setInterval(() => refreshStockAlarms(true), 5 * 60 * 1000);
 }
